@@ -19,11 +19,17 @@ const bookSchema = new mongoose.Schema({
   publishedYear: {
     type: Number
   },
-  genre: {
+  category: {
     type: String
   },
-  availableCopies: {
+  totalQuantity: {
     type: Number,
+    required: true,
+    default: 1
+  },
+  availableQuantity: {
+    type: Number,
+    required: true,
     default: 1
   }
 }, {
