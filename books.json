@@ -1,0 +1,22 @@
+[
+  {
+    "_id": { "$oid": "653b7a9f1c4a2b0012a3b333" },
+    "title": "Clean Code: A Handbook of Agile Software Craftsmanship",
+    "author": "Robert C. Martin",
+    "isbn": "978-0132350884",
+    "category": "Lập trình",
+    "totalQuantity": 10,
+    "availableQuantity": 9,
+    "createdAt": { "$date": "2023-10-27T10:15:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "653b7a9f1c4a2b0012a3b444" },
+    "title": "Node.js Design Patterns",
+    "author": "Mario Casciaro",
+    "isbn": "978-1839214110",
+    "category": "Lập trình",
+    "totalQuantity": 5,
+    "availableQuantity": 5,
+    "createdAt": { "$date": "2023-10-27T10:20:00.000Z" }
+  }
+]
