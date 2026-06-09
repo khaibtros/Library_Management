@@ -23,14 +23,15 @@ const getBookById = async (req, res) => {
 
 // Create a new book
 const createBook = async (req, res) => {
-  const { title, author, isbn, publishedYear, genre, availableCopies } = req.body;
+  const { title, author, isbn, publishedYear, category, totalQuantity, availableQuantity } = req.body;
   const book = new Book({
     title,
     author,
     isbn,
     publishedYear,
-    genre,
-    availableCopies
+    category,
+    totalQuantity,
+    availableQuantity
   });
 
   try {
