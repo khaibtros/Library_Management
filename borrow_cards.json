@@ -1,0 +1,19 @@
+[
+  {
+    "_id": { "$oid": "653b7a9f1c4a2b0012a3b555" },
+    "reader": { "$oid": "653b7a9f1c4a2b0012a3b111" },
+    "borrowedBooks": [
+      {
+        "book": { "$oid": "653b7a9f1c4a2b0012a3b333" },
+        "quantity": 1
+      }
+    ],
+    "processedBy": { "$oid": "653b7a9f1c4a2b0012a3b222" },
+    "borrowDate": { "$date": "2023-10-27T10:30:00.000Z" },
+    "dueDate": { "$date": "2023-11-10T10:30:00.000Z" },
+    "returnDate": null,
+    "status": "borrowed",
+    "createdAt": { "$date": "2023-10-27T10:25:00.000Z" },
+    "updatedAt": { "$date": "2023-10-27T10:30:00.000Z" }
+  }
+]
