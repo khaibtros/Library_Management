@@ -1,0 +1,32 @@
+[
+  {
+    "_id": { "$oid": "653b7a9f1c4a2b0012a3b222" },
+    "name": "Super Admin",
+    "email": "admin@library.com",
+    "password": "$2b$10$mrebIlTFldaotYHiA9wpk.2aqryOIcml4XwKDEno2kNO.wUKgIj1.",
+    "role": "admin",
+    "createdAt": { "$date": "2023-10-20T08:00:00.000Z" },
+    "updatedAt": { "$date": "2023-10-20T08:00:00.000Z" },
+    "__v": 0
+  },
+  {
+    "_id": { "$oid": "653b7a9f1c4a2b0012a3b111" },
+    "name": "Librarian One",
+    "email": "librarian@library.com",
+    "password": "$2b$10$mrebIlTFldaotYHiA9wpk.2aqryOIcml4XwKDEno2kNO.wUKgIj1.",
+    "role": "librarian",
+    "createdAt": { "$date": "2023-10-21T09:15:00.000Z" },
+    "updatedAt": { "$date": "2023-10-21T09:15:00.000Z" },
+    "__v": 0
+  },
+  {
+    "_id": { "$oid": "653b7a9f1c4a2b0012a3b112" },
+    "name": "Reader One",
+    "email": "reader@library.com",
+    "password": "$2b$10$mrebIlTFldaotYHiA9wpk.2aqryOIcml4XwKDEno2kNO.wUKgIj1.",
+    "role": "reader",
+    "createdAt": { "$date": "2023-10-22T10:30:00.000Z" },
+    "updatedAt": { "$date": "2023-10-22T10:30:00.000Z" },
+    "__v": 0
+  }
+]
