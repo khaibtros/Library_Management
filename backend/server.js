@@ -6,6 +6,7 @@ const bookRoutes = require('./routes/bookRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const borrowRoutes = require('./routes/borrowRoutes');
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/api/books', bookRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/borrow-cards', borrowRoutes);
 
 // Root Endpoint
 app.get('/', (req, res) => {
