@@ -10,9 +10,6 @@ export default function Sidebar() {
         <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
           📊 Dashboard
         </NavLink>
-        <NavLink to="/books" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
-          📖 Sách
-        </NavLink>
         {user?.role === 'admin' && (
           <NavLink to="/users" className={({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link'}>
             👥 Người dùng

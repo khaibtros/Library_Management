@@ -34,7 +34,7 @@ const createUser = async (req, res) => {
   }
 };
 
-// @desc    Cập nhật thông tin/role của user
+// @desc    Cập nhật thông tin/role của user (kèm đổi mật khẩu nếu có)
 // @route   PUT /api/users/:id
 // @access  Private/Admin
 const updateUser = async (req, res) => {
@@ -48,8 +48,11 @@ const updateUser = async (req, res) => {
     user.email = req.body.email || user.email;
     user.role = req.body.role || user.role;
 
-    if (req.body.password) {
-      user.password = req.body.password;
+    if (req.body.newPassword) {
+      if (req.body.newPassword.length < 6) {
+        return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+      }
+      user.password = req.body.newPassword;
     }
 
     const updatedUser = await user.save();

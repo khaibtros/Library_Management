@@ -9,6 +9,7 @@ import BookList from './pages/Books/BookList';
 import BookForm from './pages/Books/BookForm';
 import UserList from './pages/Users/UserList';
 import UserForm from './pages/Users/UserForm';
+import BorrowCardList from './pages/BorrowCards/BorrowCardList';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
             <Route path="books" element={<BookList />} />
             <Route path="books/new" element={<BookForm />} />
             <Route path="books/edit/:id" element={<BookForm />} />
+            <Route path="borrow-cards" element={<BorrowCardList />} />
             <Route path="users" element={<PrivateRoute roles={['admin']}><UserList /></PrivateRoute>} />
             <Route path="users/new" element={<PrivateRoute roles={['admin']}><UserForm /></PrivateRoute>} />
             <Route path="users/edit/:id" element={<PrivateRoute roles={['admin']}><UserForm /></PrivateRoute>} />

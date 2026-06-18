@@ -4,7 +4,7 @@ const { getUsers, createUser, updateUser, deleteUser } = require('../controllers
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
-// Áp dụng middleware protect (phải đăng nhập) và authorize (phải là admin) cho tất cả các route ở dưới
+// Các route admin
 router.use(protect);
 router.use(authorize('admin'));
 
