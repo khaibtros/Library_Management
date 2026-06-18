@@ -11,7 +11,9 @@ export default function Dashboard() {
       try {
         const { data } = await API.get('/dashboard/stats');
         setStats(data);
-      } catch { }
+      } catch {
+        setStats(null);
+      }
     };
     fetchStats();
   }, []);
