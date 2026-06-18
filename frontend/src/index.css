@@ -167,6 +167,12 @@ a:hover { text-decoration: underline; }
   font-weight: 600;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -333,6 +339,12 @@ a:hover { text-decoration: underline; }
 .readonly-field span {
   color: var(--text-light);
   font-size: 0.82rem;
+}
+
+.field-hint {
+  color: var(--text-light);
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
 }
 
 .borrowed-book-editor {
@@ -550,6 +562,7 @@ a:hover { text-decoration: underline; }
   .form-row { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .page-header { align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+  .header-actions { flex-wrap: wrap; }
   .detail-grid, .status-options { grid-template-columns: 1fr; }
   .borrowed-book-row { grid-template-columns: 1fr 100px; }
   .remove-book-button { grid-column: 1 / -1; justify-content: center; }

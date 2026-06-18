@@ -50,7 +50,10 @@ export default function BorrowCardList() {
           <h1>📋 Phiếu mượn</h1>
           <p className="page-subtitle">Theo dõi chi tiết việc mượn và trả sách.</p>
         </div>
-        {!loading && <span className="result-count">{cards.length} phiếu</span>}
+        <div className="header-actions">
+          {!loading && <span className="result-count">{cards.length} phiếu</span>}
+          <Link to="/borrow-cards/new" className="btn btn-primary">+ Tạo phiếu mượn</Link>
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}

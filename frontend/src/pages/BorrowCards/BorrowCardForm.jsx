@@ -9,13 +9,16 @@ const emptyBorrowedBook = () => ({ book: '', quantity: 1 });
 
 export default function BorrowCardForm() {
   const { id } = useParams();
+  const isEdit = Boolean(id);
   const navigate = useNavigate();
   const [books, setBooks] = useState([]);
+  const [readers, setReaders] = useState([]);
   const [reader, setReader] = useState(null);
   const [processedBy, setProcessedBy] = useState(null);
   const [form, setForm] = useState({
+    reader: '',
     borrowedBooks: [emptyBorrowedBook()],
-    borrowDate: '',
+    borrowDate: toDateTimeLocal(new Date()),
     dueDate: '',
     returnDate: '',
     status: 'borrowed',
@@ -28,29 +31,40 @@ export default function BorrowCardForm() {
     let active = true;
     const loadData = async () => {
       try {
-        const [{ data: card }, { data: bookData }] = await Promise.all([
-          API.get(`/borrow-cards/${id}`),
-          API.get('/books'),
-        ]);
-        if (!active) return;
+        if (isEdit) {
+          const [{ data: card }, { data: bookData }] = await Promise.all([
+            API.get(`/borrow-cards/${id}`),
+            API.get('/books'),
+          ]);
+          if (!active) return;
 
-        setBooks(Array.isArray(bookData) ? bookData : []);
-        setReader(card.reader || null);
-        setProcessedBy(card.processedBy || null);
-        setForm({
-          borrowedBooks: card.borrowedBooks?.length
-            ? card.borrowedBooks.map((item) => ({
-                book: item.book?._id || item.book || '',
-                quantity: item.quantity || 1,
-              }))
-            : [emptyBorrowedBook()],
-          borrowDate: toDateTimeLocal(card.borrowDate),
-          dueDate: toDateTimeLocal(card.dueDate),
-          returnDate: toDateTimeLocal(card.returnDate),
-          status: card.status || 'borrowed',
-        });
+          setBooks(Array.isArray(bookData) ? bookData : []);
+          setReader(card.reader || null);
+          setProcessedBy(card.processedBy || null);
+          setForm({
+            reader: card.reader?._id || card.reader || '',
+            borrowedBooks: card.borrowedBooks?.length
+              ? card.borrowedBooks.map((item) => ({
+                  book: item.book?._id || item.book || '',
+                  quantity: item.quantity || 1,
+                }))
+              : [emptyBorrowedBook()],
+            borrowDate: toDateTimeLocal(card.borrowDate),
+            dueDate: toDateTimeLocal(card.dueDate),
+            returnDate: toDateTimeLocal(card.returnDate),
+            status: card.status || 'borrowed',
+          });
+        } else {
+          const [{ data: bookData }, { data: readerData }] = await Promise.all([
+            API.get('/books'),
+            API.get('/users/readers'),
+          ]);
+          if (!active) return;
+          setBooks(Array.isArray(bookData) ? bookData : []);
+          setReaders(Array.isArray(readerData) ? readerData : []);
+        }
       } catch (requestError) {
-        if (active) setError(getApiErrorMessage(requestError, 'Không thể tải dữ liệu phiếu mượn.'));
+        if (active) setError(getApiErrorMessage(requestError, `Không thể tải dữ liệu ${isEdit ? 'phiếu mượn' : 'tạo phiếu'}.`));
       } finally {
         if (active) setLoading(false);
       }
@@ -58,7 +72,7 @@ export default function BorrowCardForm() {
 
     loadData();
     return () => { active = false; };
-  }, [id]);
+  }, [id, isEdit]);
 
   const handleFieldChange = (event) => {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
@@ -88,6 +102,7 @@ export default function BorrowCardForm() {
   };
 
   const validate = () => {
+    if (!isEdit && !form.reader) return 'Vui lòng chọn độc giả.';
     if (form.borrowedBooks.length === 0) return 'Phiếu mượn phải có ít nhất một sách.';
     if (form.borrowedBooks.some((item) => !item.book)) return 'Vui lòng chọn sách cho tất cả các dòng.';
 
@@ -121,6 +136,7 @@ export default function BorrowCardForm() {
     }
 
     const payload = {
+      ...(!isEdit && { reader: form.reader }),
       borrowedBooks: form.borrowedBooks.map((item) => ({
         book: item.book,
         quantity: Number(item.quantity),
@@ -133,25 +149,30 @@ export default function BorrowCardForm() {
 
     setSaving(true);
     try {
-      await API.put(`/borrow-cards/${id}`, payload);
-      navigate(`/borrow-cards/${id}`);
+      if (isEdit) {
+        await API.put(`/borrow-cards/${id}`, payload);
+        navigate(`/borrow-cards/${id}`);
+      } else {
+        const { data: createdCard } = await API.post('/borrow-cards', payload);
+        navigate(`/borrow-cards/${createdCard._id}`);
+      }
     } catch (requestError) {
-      setError(getApiErrorMessage(requestError, 'Không thể cập nhật phiếu mượn.'));
+      setError(getApiErrorMessage(requestError, `Không thể ${isEdit ? 'cập nhật' : 'tạo'} phiếu mượn.`));
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div className="loading-panel">Đang tải phiếu mượn...</div>;
+  if (loading) return <div className="loading-panel">Đang tải dữ liệu phiếu mượn...</div>;
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>✏️ Sửa phiếu mượn</h1>
-          <p className="page-subtitle">Cập nhật sách, thời hạn và trạng thái của phiếu.</p>
+          <h1>{isEdit ? '✏️ Sửa phiếu mượn' : '➕ Tạo phiếu mượn'}</h1>
+          <p className="page-subtitle">{isEdit ? 'Cập nhật sách, thời hạn và trạng thái của phiếu.' : 'Chọn độc giả, sách mượn và thời hạn trả.'}</p>
         </div>
-        <Link to={`/borrow-cards/${id}`} className="btn btn-secondary">Hủy</Link>
+        <Link to={isEdit ? `/borrow-cards/${id}` : '/borrow-cards'} className="btn btn-secondary">Hủy</Link>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -159,22 +180,44 @@ export default function BorrowCardForm() {
       <form onSubmit={handleSubmit} className="form borrow-form">
         <section className="form-section">
           <h2>Thông tin xử lý</h2>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Độc giả</label>
-              <div className="readonly-field">
-                <strong>{reader?.name || 'Không xác định'}</strong>
-                <span>{reader?.email || reader?._id || reader || '—'}</span>
+          {isEdit ? (
+            <div className="form-row">
+              <div className="form-group">
+                <label>Độc giả</label>
+                <div className="readonly-field">
+                  <strong>{reader?.name || 'Không xác định'}</strong>
+                  <span>{reader?.email || reader?._id || reader || '—'}</span>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Người xử lý</label>
+                <div className="readonly-field">
+                  <strong>{processedBy?.name || 'Chưa xác định'}</strong>
+                  <span>{processedBy?.email || processedBy?._id || processedBy || '—'}</span>
+                </div>
               </div>
             </div>
-            <div className="form-group">
-              <label>Người xử lý</label>
-              <div className="readonly-field">
-                <strong>{processedBy?.name || 'Chưa xác định'}</strong>
-                <span>{processedBy?.email || processedBy?._id || processedBy || '—'}</span>
+          ) : (
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="reader">Độc giả</label>
+                <select id="reader" name="reader" value={form.reader} onChange={handleFieldChange} required>
+                  <option value="">-- Chọn độc giả --</option>
+                  {readers.map((item) => (
+                    <option key={item._id} value={item._id}>{item.name} — {item.email}</option>
+                  ))}
+                </select>
+                {readers.length === 0 && <p className="field-hint">Chưa có tài khoản độc giả nào để lập phiếu.</p>}
+              </div>
+              <div className="form-group">
+                <label>Người xử lý</label>
+                <div className="readonly-field">
+                  <strong>Tài khoản đang đăng nhập</strong>
+                  <span>Backend sẽ tự động ghi nhận người tạo phiếu.</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
 
         <section className="form-section">
@@ -278,9 +321,9 @@ export default function BorrowCardForm() {
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Đang cập nhật...' : 'Cập nhật phiếu mượn'}
+            {saving ? 'Đang lưu...' : isEdit ? 'Cập nhật phiếu mượn' : 'Tạo phiếu mượn'}
           </button>
-          <Link to={`/borrow-cards/${id}`} className="btn btn-secondary">Hủy</Link>
+          <Link to={isEdit ? `/borrow-cards/${id}` : '/borrow-cards'} className="btn btn-secondary">Hủy</Link>
         </div>
       </form>
     </div>

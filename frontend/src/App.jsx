@@ -27,6 +27,7 @@ export default function App() {
             <Route path="books/new" element={<PrivateRoute roles={['admin', 'librarian']}><BookForm /></PrivateRoute>} />
             <Route path="books/edit/:id" element={<PrivateRoute roles={['admin', 'librarian']}><BookForm /></PrivateRoute>} />
             <Route path="borrow-cards" element={<PrivateRoute roles={['admin', 'librarian']}><BorrowCardList /></PrivateRoute>} />
+            <Route path="borrow-cards/new" element={<PrivateRoute roles={['admin', 'librarian']}><BorrowCardForm /></PrivateRoute>} />
             <Route path="borrow-cards/:id" element={<PrivateRoute roles={['admin', 'librarian']}><BorrowCardDetail /></PrivateRoute>} />
             <Route path="borrow-cards/:id/edit" element={<PrivateRoute roles={['admin', 'librarian']}><BorrowCardForm /></PrivateRoute>} />
             <Route path="users" element={<PrivateRoute roles={['admin']}><UserList /></PrivateRoute>} />
