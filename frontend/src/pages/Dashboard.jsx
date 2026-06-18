@@ -253,8 +253,8 @@ export default function Dashboard() {
                   <td>
                     <span className={`badge badge-${card.status}`}>
                       {card.status === 'borrowed' ? 'Đang mượn' :
-                       card.status === 'returned' ? 'Đã trả' :
-                       card.status === 'overdue' ? 'Quá hạn' : 'Đã hủy'}
+                        card.status === 'returned' ? 'Đã trả' :
+                          card.status === 'overdue' ? 'Quá hạn' : 'Đã hủy'}
                     </span>
                   </td>
                 </tr>

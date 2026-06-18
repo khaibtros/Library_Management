@@ -36,7 +36,7 @@ const borrowCardSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['borrowed', 'returned', 'overdue', 'cancelled'],
+    enum: ['pending', 'borrowed', 'returned', 'overdue', 'cancelled'],
     default: 'borrowed',
   }
 }, { timestamps: true });

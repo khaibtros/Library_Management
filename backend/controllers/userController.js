@@ -12,6 +12,17 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getReaders = async (req, res) => {
+  try {
+    const readers = await User.find({ role: 'reader' })
+      .select('_id name email')
+      .sort({ name: 1 });
+    res.json(readers);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server khi lấy danh sách độc giả', error: error.message });
+  }
+};
+
 // @desc    Thêm user mới (bởi Admin)
 // @route   POST /api/users
 // @access  Private/Admin
@@ -85,6 +96,7 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   getUsers,
+  getReaders,
   createUser,
   updateUser,
   deleteUser,
