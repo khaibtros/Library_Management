@@ -96,17 +96,17 @@ export default function Dashboard() {
   const users = s.users || {};
 
   const userRoleData = [
-    { name: 'Admin', value: users.admin || 0, color: ROLE_COLORS.admin },
-    { name: 'Librarian', value: users.librarian || 0, color: ROLE_COLORS.librarian },
-    { name: 'Reader', value: users.reader || 0, color: ROLE_COLORS.reader },
-  ];
+    { name: 'Admin', value: users.admin, color: ROLE_COLORS.admin },
+    { name: 'Librarian', value: users.librarian, color: ROLE_COLORS.librarian },
+    { name: 'Reader', value: users.reader, color: ROLE_COLORS.reader },
+  ].filter(d => d.value > 0);
 
   const borrowStatusData = [
-    { name: 'Đang mượn', value: s.totalBorrowed || 0, color: BORROW_COLORS.borrowed },
-    { name: 'Đã trả', value: s.totalReturned || 0, color: BORROW_COLORS.returned },
-    { name: 'Quá hạn', value: s.totalOverdue || 0, color: BORROW_COLORS.overdue },
-    { name: 'Đã hủy', value: s.totalCancelled || 0, color: BORROW_COLORS.cancelled },
-  ];
+    { name: 'Đang mượn', value: s.totalBorrowed, color: BORROW_COLORS.borrowed },
+    { name: 'Đã trả', value: s.totalReturned, color: BORROW_COLORS.returned },
+    { name: 'Quá hạn', value: s.totalOverdue, color: BORROW_COLORS.overdue },
+    { name: 'Đã hủy', value: s.totalCancelled, color: BORROW_COLORS.cancelled },
+  ].filter(d => d.value > 0);
 
   const categoryData = (s.booksByCategory || []).map((item, i) => ({
     name: item._id || 'Khác',
@@ -160,48 +160,56 @@ export default function Dashboard() {
 
         <div className="chart-card">
           <h3 className="chart-title">Người dùng theo vai trò</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie
-                data={userRoleData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {userRoleData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<PieTooltip />} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          {userRoleData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={userRoleData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {userRoleData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<PieTooltip />} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="chart-empty">Chưa có dữ liệu người dùng.</div>
+          )}
         </div>
 
         <div className="chart-card">
           <h3 className="chart-title">Trạng thái mượn sách</h3>
-          <ResponsiveContainer width="100%" height={280}>
-            <PieChart>
-              <Pie
-                data={borrowStatusData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {borrowStatusData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<PieTooltip />} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          {borrowStatusData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={borrowStatusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {borrowStatusData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<PieTooltip />} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="chart-empty">Chưa có dữ liệu mượn sách.</div>
+          )}
         </div>
 
         <div className="chart-card chart-card-wide">
