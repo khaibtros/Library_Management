@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +10,7 @@ import {
 const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
 const BORROW_COLORS = { borrowed: '#3b82f6', returned: '#22c55e', overdue: '#ef4444', cancelled: '#94a3b8' };
 const ROLE_COLORS = { admin: '#ef4444', librarian: '#3b82f6', reader: '#22c55e' };
+const CURRENT_YEAR = new Date().getFullYear();
 
 function StatCard({ icon, label, value, color }) {
   return (
@@ -59,20 +61,20 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await API.get('/dashboard/stats');
+        const { data } = await API.get(user?.role === 'librarian' ? '/dashboard/librarian' : '/dashboard/stats');
         setStats(data);
       } catch (err) {
         console.error('Dashboard stats error:', err);
       }
       setLoading(false);
     };
-    if (user?.role === 'admin') fetchStats();
+    if (user?.role === 'admin' || user?.role === 'librarian') fetchStats();
     else setLoading(false);
   }, [user]);
 
   if (loading) return <div className="loading">Đang tải...</div>;
 
-  if (user?.role !== 'admin') {
+  if (user?.role === 'reader') {
     return (
       <div className="page">
         <div className="welcome-card">
@@ -89,6 +91,10 @@ export default function Dashboard() {
         <p>Không thể tải dữ liệu thống kê.</p>
       </div>
     );
+  }
+
+  if (user?.role === 'librarian') {
+    return <div className="page dashboard-page"><div className="page-header"><h1>Dashboard Thủ thư</h1><span className="dashboard-date">{new Date().toLocaleDateString('vi-VN')}</span></div><div className="stats-row"><StatCard icon="📖" label="Đang mượn" value={stats.borrowed || 0} color="#3b82f6" /><StatCard icon="⏰" label="Quá hạn" value={stats.overdue || 0} color="#ef4444" /><StatCard icon="📅" label="Sắp đến hạn" value={stats.dueSoon || 0} color="#f59e0b" /><StatCard icon="📚" label="Sắp hết sách" value={stats.lowStock?.length || 0} color="#8b5cf6" /></div><div className="dashboard-charts"><section className="dashboard-section"><h3 className="section-title">Sách cần bổ sung</h3><div className="table-wrapper"><table className="table"><thead><tr><th>Sách</th><th>Tác giả</th><th>Còn lại</th></tr></thead><tbody>{stats.lowStock?.map((book) => <tr key={book._id}><td>{book.title}</td><td>{book.author}</td><td>{book.availableQuantity}</td></tr>)}{!stats.lowStock?.length && <tr><td colSpan="3" className="empty-cell">Không có sách sắp hết.</td></tr>}</tbody></table></div></section><section className="dashboard-section"><h3 className="section-title">Hoạt động gần đây</h3><div className="table-wrapper"><table className="table"><thead><tr><th>Độc giả</th><th>Sách</th><th>Trạng thái</th></tr></thead><tbody>{stats.recentBorrows?.map((card) => <tr key={card._id}><td>{card.reader?.name}</td><td>{card.borrowedBooks?.map((item) => item.book?.title).join(', ')}</td><td>{card.status}</td></tr>)}{!stats.recentBorrows?.length && <tr><td colSpan="3" className="empty-cell">Chưa có hoạt động.</td></tr>}</tbody></table></div></section></div></div>;
   }
 
   const s = stats || {};
@@ -111,6 +117,12 @@ export default function Dashboard() {
     name: item._id || 'Khác',
     count: item.count || 0,
     color: COLORS[i % COLORS.length],
+  }));
+
+  const borrowMonthly = s.monthlyBorrows || { labels: [], data: [] };
+  const monthlyData = borrowMonthly.labels.map((label, i) => ({
+    name: label,
+    'Lượt mượn': borrowMonthly.data[i] || 0,
   }));
 
   return (
@@ -205,7 +217,22 @@ export default function Dashboard() {
           )}
         </div>
 
-
+        <div className="chart-card chart-card-wide">
+          <h3 className="chart-title">Lượt mượn theo tháng ({CURRENT_YEAR})</h3>
+          {borrowMonthly.data.some(v => v > 0) ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={monthlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="Lượt mượn" fill="#4f46e5" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+          ) : (
+              <div className="chart-empty">Chưa có lượt mượn nào trong năm {CURRENT_YEAR}.</div>
+          )}
+        </div>
       </div>
 
       <div className="dashboard-section">

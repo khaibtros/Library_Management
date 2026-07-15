@@ -31,7 +31,13 @@ const bookSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 1
-  }
+  },
+  stockAdjustments: [{
+    quantityChange: { type: Number, required: true },
+    reason: { type: String, required: true, trim: true },
+    adjustedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    adjustedAt: { type: Date, default: Date.now },
+  }]
 }, {
   timestamps: true
 });

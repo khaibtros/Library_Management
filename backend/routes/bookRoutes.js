@@ -5,7 +5,8 @@ const {
   getBookById,
   createBook,
   updateBook,
-  deleteBook
+  deleteBook,
+  adjustStock,
 } = require('../controllers/bookController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -20,5 +21,7 @@ router.route('/:id')
   .get(getBookById)
   .put(protect, authorize('admin', 'librarian'), updateBook)
   .delete(protect, authorize('admin', 'librarian'), deleteBook);
+
+router.patch('/:id/stock-adjustment', protect, authorize('admin', 'librarian'), adjustStock);
 
 module.exports = router;

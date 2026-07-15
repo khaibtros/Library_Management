@@ -14,13 +14,37 @@ const getUsers = async (req, res) => {
 
 const getReaders = async (req, res) => {
   try {
-    const readers = await User.find({ role: 'reader' })
-      .select('_id name email')
-      .sort({ name: 1 });
-    res.json(readers);
+    const { search, page, limit } = req.query;
+    const query = { role: 'reader' };
+    if (search) { const pattern = new RegExp(search, 'i'); query.$or = [{ name: pattern }, { email: pattern }]; }
+    const requestedPaging = page || limit;
+    if (!requestedPaging) return res.json(await User.find(query).select('_id name email').sort({ name: 1 }));
+    const pageNumber = Math.max(1, Number(page) || 1); const pageSize = Math.min(100, Math.max(1, Number(limit) || 10));
+    const [count, data] = await Promise.all([User.countDocuments(query), User.find(query).select('_id name email createdAt').sort({ name: 1 }).skip((pageNumber - 1) * pageSize).limit(pageSize)]);
+    return res.json({ success: true, count, page: pageNumber, totalPages: Math.ceil(count / pageSize), data });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server khi lấy danh sách độc giả', error: error.message });
   }
+};
+
+const getReaderById = async (req, res) => {
+  try {
+    const reader = await User.findOne({ _id: req.params.id, role: 'reader' }).select('_id name email createdAt');
+    if (!reader) return res.status(404).json({ message: 'Không tìm thấy độc giả' });
+    const BorrowCard = require('../models/BorrowCard');
+    const borrowCards = await BorrowCard.find({ reader: reader._id }).populate('borrowedBooks.book', 'title author isbn').sort({ createdAt: -1 });
+    return res.json({ ...reader.toObject(), borrowCards });
+  } catch (error) { return res.status(500).json({ message: error.message }); }
+};
+
+const createReader = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name?.trim() || !email?.trim() || !password || password.length < 6) return res.status(400).json({ message: 'Tên, email và mật khẩu tối thiểu 6 ký tự là bắt buộc' });
+    if (await User.exists({ email })) return res.status(400).json({ message: 'Email đã được sử dụng' });
+    const reader = await User.create({ name: name.trim(), email: email.trim(), password, role: 'reader' });
+    return res.status(201).json({ _id: reader._id, name: reader.name, email: reader.email, role: reader.role });
+  } catch (error) { return res.status(400).json({ message: error.message }); }
 };
 
 // @desc    Thêm user mới (bởi Admin)
@@ -97,6 +121,8 @@ const deleteUser = async (req, res) => {
 module.exports = {
   getUsers,
   getReaders,
+  getReaderById,
+  createReader,
   createUser,
   updateUser,
   deleteUser,

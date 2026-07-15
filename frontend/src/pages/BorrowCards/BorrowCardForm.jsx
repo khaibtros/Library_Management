@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import API from '../../api/axios';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { BORROW_STATUSES, BORROW_STATUS_VALUES } from '../../utils/borrowStatus';
 import { toDateTimeLocal, toIsoString } from '../../utils/date';
 
 const emptyBorrowedBook = () => ({ book: '', quantity: 1 });
@@ -123,6 +122,7 @@ export default function BorrowCardForm() {
     if (form.returnDate && new Date(form.returnDate).getTime() < borrowTime) {
       return 'Ngày trả không được sớm hơn ngày mượn.';
     }
+    if (form.borrowedBooks.some((item) => Number(item.quantity) > Number(books.find((book) => book._id === item.book)?.availableQuantity ?? 0))) return 'Số lượng mượn vượt quá số sách hiện có.';
     return '';
   };
 
@@ -142,9 +142,7 @@ export default function BorrowCardForm() {
         quantity: Number(item.quantity),
       })),
       borrowDate: toIsoString(form.borrowDate),
-      status: form.status,
       ...(form.dueDate && { dueDate: toIsoString(form.dueDate) }),
-      ...(form.returnDate && { returnDate: toIsoString(form.returnDate) }),
     };
 
     setSaving(true);
@@ -169,7 +167,7 @@ export default function BorrowCardForm() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>{isEdit ? '✏️ Sửa phiếu mượn' : '➕ Tạo phiếu mượn'}</h1>
+          <h1>{isEdit ? 'Sửa phiếu mượn' : 'Tạo phiếu mượn'}</h1>
           <p className="page-subtitle">{isEdit ? 'Cập nhật sách, thời hạn và trạng thái của phiếu.' : 'Chọn độc giả, sách mượn và thời hạn trả.'}</p>
         </div>
         <Link to={isEdit ? `/borrow-cards/${id}` : '/borrow-cards'} className="btn btn-secondary">Hủy</Link>
@@ -290,34 +288,9 @@ export default function BorrowCardForm() {
               <label htmlFor="dueDate">Hạn trả</label>
               <input id="dueDate" name="dueDate" type="datetime-local" value={form.dueDate} onChange={handleFieldChange} />
             </div>
-            <div className="form-group">
-              <label htmlFor="returnDate">Ngày trả</label>
-              <input id="returnDate" name="returnDate" type="datetime-local" value={form.returnDate} onChange={handleFieldChange} />
-            </div>
           </div>
         </section>
 
-        <section className="form-section">
-          <h2>Trạng thái</h2>
-          <div className="status-options">
-            {BORROW_STATUS_VALUES.map((status) => {
-              const config = BORROW_STATUSES[status];
-              return (
-                <label key={status} className={`status-option status-option-${status} ${form.status === status ? 'selected' : ''}`}>
-                  <input
-                    type="radio"
-                    name="status"
-                    value={status}
-                    checked={form.status === status}
-                    onChange={handleFieldChange}
-                  />
-                  <span className="status-option-icon" aria-hidden="true">{config.icon}</span>
-                  <span><strong>{config.label}</strong><small>{config.description}</small></span>
-                </label>
-              );
-            })}
-          </div>
-        </section>
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>

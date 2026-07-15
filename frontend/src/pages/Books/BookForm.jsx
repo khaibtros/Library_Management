@@ -10,7 +10,6 @@ const initialForm = {
   publishedYear: '',
   category: '',
   totalQuantity: 1,
-  availableQuantity: 1,
 };
 
 export default function BookForm() {
@@ -37,7 +36,6 @@ export default function BookForm() {
           publishedYear: data.publishedYear ?? '',
           category: data.category || '',
           totalQuantity: data.totalQuantity ?? 1,
-          availableQuantity: data.availableQuantity ?? 1,
         });
       } catch (requestError) {
         if (active) setError(getApiErrorMessage(requestError, 'Không thể tải thông tin sách.'));
@@ -59,19 +57,10 @@ export default function BookForm() {
     setError('');
 
     const totalQuantity = Number(form.totalQuantity);
-    const availableQuantity = Number(form.availableQuantity);
     const publishedYear = form.publishedYear === '' ? undefined : Number(form.publishedYear);
 
     if (!Number.isInteger(totalQuantity) || totalQuantity < 1) {
       setError('Tổng số lượng phải là số nguyên từ 1 trở lên.');
-      return;
-    }
-    if (!Number.isInteger(availableQuantity) || availableQuantity < 0) {
-      setError('Số lượng có sẵn phải là số nguyên không âm.');
-      return;
-    }
-    if (availableQuantity > totalQuantity) {
-      setError('Số lượng có sẵn không được vượt quá tổng số lượng.');
       return;
     }
 
@@ -81,7 +70,6 @@ export default function BookForm() {
       isbn: form.isbn.trim(),
       category: form.category.trim(),
       totalQuantity,
-      availableQuantity,
       ...(publishedYear !== undefined && { publishedYear }),
     };
 
@@ -134,10 +122,7 @@ export default function BookForm() {
             <input id="totalQuantity" name="totalQuantity" type="number" min="1" step="1" value={form.totalQuantity} onChange={handleChange} required />
           </div>
         </div>
-        <div className="form-group">
-          <label htmlFor="availableQuantity">Số lượng có sẵn</label>
-          <input id="availableQuantity" name="availableQuantity" type="number" min="0" step="1" value={form.availableQuantity} onChange={handleChange} required />
-        </div>
+        {isEdit && <p className="field-hint">Số lượng có sẵn được hệ thống quản lý theo mượn/trả và thao tác điều chỉnh tồn riêng.</p>}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? 'Đang lưu...' : isEdit ? 'Cập nhật' : 'Thêm mới'}

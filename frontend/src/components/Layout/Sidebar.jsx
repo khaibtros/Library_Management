@@ -1,22 +1,4 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
 const linkClass = ({ isActive }) => isActive ? 'sidebar-link active' : 'sidebar-link';
-
-export default function Sidebar() {
-  const { user } = useAuth();
-  return (
-    <aside className="sidebar">
-      <nav className="sidebar-nav">
-        <NavLink to="/dashboard" className={linkClass}>
-          📊 Dashboard
-        </NavLink>
-        {user?.role === 'admin' && (
-          <NavLink to="/users" className={linkClass}>
-            👥 Người dùng
-          </NavLink>
-        )}
-      </nav>
-    </aside>
-  );
-}
+export default function Sidebar() { const { user } = useAuth(); const canManageLibrary = user?.role === 'admin' || user?.role === 'librarian'; return <aside className="sidebar"><nav className="sidebar-nav"><NavLink to="/dashboard" className={linkClass}>Dashboard</NavLink><NavLink to="/books" className={linkClass}>Sách</NavLink>{canManageLibrary && <><NavLink to="/borrow-cards" className={linkClass}>Phiếu mượn</NavLink><NavLink to="/borrow-cards/overdue" className={linkClass}>Phiếu quá hạn</NavLink><NavLink to="/readers" className={linkClass}>Độc giả</NavLink></>}{user?.role === 'admin' && <NavLink to="/users" className={linkClass}>Người dùng</NavLink>}</nav></aside>; }

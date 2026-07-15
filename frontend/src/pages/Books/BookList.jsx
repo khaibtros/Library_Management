@@ -9,6 +9,7 @@ export default function BookList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const [stockFilter, setStockFilter] = useState('all');
   const { user } = useAuth();
   const canModify = user?.role === 'admin' || user?.role === 'librarian';
 
@@ -43,6 +44,16 @@ export default function BookList() {
     }
   };
 
+  const adjustStock = async (book) => {
+    const quantityChange = Number(window.prompt(`Điều chỉnh tồn cho “${book.title}” (dương để nhập, âm để giảm):`));
+    if (!Number.isInteger(quantityChange) || quantityChange === 0) return;
+    const reason = window.prompt('Lý do điều chỉnh tồn:');
+    if (!reason?.trim()) return;
+    try { await API.patch(`/books/${book._id}/stock-adjustment`, { quantityChange, reason }); window.location.reload(); }
+    catch (requestError) { setError(getApiErrorMessage(requestError, 'Không thể điều chỉnh tồn kho.')); }
+  };
+  const visibleBooks = books.filter((book) => stockFilter === 'all' || (stockFilter === 'out' ? book.availableQuantity === 0 : book.availableQuantity > 0 && book.availableQuantity <= 2));
+
   return (
     <div className="page">
       <div className="page-header">
@@ -50,7 +61,7 @@ export default function BookList() {
           <h1>📖 Danh sách sách</h1>
           <p className="page-subtitle">Theo dõi đầu sách và số lượng hiện có trong thư viện.</p>
         </div>
-        {canModify && <Link to="/books/new" className="btn btn-primary">+ Thêm sách</Link>}
+        <div className="header-actions"><select value={stockFilter} onChange={(event) => setStockFilter(event.target.value)}><option value="all">Tất cả tồn kho</option><option value="out">Hết sách</option><option value="low">Sắp hết (1–2)</option></select>{canModify && <Link to="/books/new" className="btn btn-primary">+ Thêm sách</Link>}</div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -72,17 +83,18 @@ export default function BookList() {
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => (
+              {visibleBooks.map((book) => (
                 <tr key={book._id}>
                   <td className="cell-primary">{book.title}</td>
                   <td>{book.author}</td>
                   <td>{book.isbn}</td>
                   <td>{book.category || '—'}</td>
                   <td>{book.totalQuantity}</td>
-                  <td>{book.availableQuantity}</td>
+                  <td>{book.availableQuantity} {book.availableQuantity === 0 && <span className="borrow-status borrow-status-overdue">Hết</span>}{book.availableQuantity > 0 && book.availableQuantity <= 2 && <span className="borrow-status borrow-status-cancelled">Sắp hết</span>}</td>
                   {canModify && (
                     <td className="actions">
                       <Link to={`/books/edit/${book._id}`} className="btn btn-sm btn-edit">Sửa</Link>
+                      <button type="button" onClick={() => adjustStock(book)} className="btn btn-sm btn-secondary">Điều chỉnh tồn</button>
                       <button
                         type="button"
                         onClick={() => handleDelete(book)}
@@ -95,7 +107,7 @@ export default function BookList() {
                   )}
                 </tr>
               ))}
-              {books.length === 0 && (
+              {visibleBooks.length === 0 && (
                 <tr><td colSpan={canModify ? 7 : 6} className="empty-cell">Chưa có sách nào.</td></tr>
               )}
             </tbody>

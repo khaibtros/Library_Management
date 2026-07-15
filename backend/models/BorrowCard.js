@@ -13,6 +13,14 @@ const borrowedBookSchema = new mongoose.Schema({
   }
 }, { _id: false });
 
+const activitySchema = new mongoose.Schema({
+  action: { type: String, required: true },
+  performedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  performedAt: { type: Date, default: Date.now },
+  previousDueDate: Date,
+  newDueDate: Date,
+}, { _id: false });
+
 const borrowCardSchema = new mongoose.Schema({
   reader: {
     type: mongoose.Schema.Types.ObjectId,
@@ -38,7 +46,8 @@ const borrowCardSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'borrowed', 'returned', 'overdue', 'cancelled'],
     default: 'borrowed',
-  }
+  },
+  activityHistory: { type: [activitySchema], default: [] },
 }, { timestamps: true });
 
 const BorrowCard = mongoose.model('BorrowCard', borrowCardSchema, 'borrow_cards');

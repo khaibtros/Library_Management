@@ -91,6 +91,23 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const getLibrarianDashboard = async (req, res) => {
+  try {
+    const now = new Date();
+    const threeDays = new Date(now); threeDays.setDate(threeDays.getDate() + 3);
+    await BorrowCard.updateMany({ status: 'borrowed', dueDate: { $lt: now } }, { $set: { status: 'overdue' } });
+    const [borrowed, overdue, dueSoon, lowStock, recentBorrows] = await Promise.all([
+      BorrowCard.countDocuments({ status: 'borrowed' }),
+      BorrowCard.countDocuments({ status: 'overdue' }),
+      BorrowCard.countDocuments({ status: 'borrowed', dueDate: { $gte: now, $lte: threeDays } }),
+      Book.find({ availableQuantity: { $lte: 2 } }).sort({ availableQuantity: 1, title: 1 }).limit(10),
+      BorrowCard.find().populate('reader', 'name email').populate('borrowedBooks.book', 'title').sort({ updatedAt: -1 }).limit(8),
+    ]);
+    return res.json({ borrowed, overdue, dueSoon, lowStock, recentBorrows });
+  } catch (error) { return res.status(500).json({ message: error.message }); }
+};
+
 module.exports = {
   getDashboardStats,
+  getLibrarianDashboard,
 };
