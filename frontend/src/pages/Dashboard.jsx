@@ -9,7 +9,6 @@ import {
 const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
 const BORROW_COLORS = { borrowed: '#3b82f6', returned: '#22c55e', overdue: '#ef4444', cancelled: '#94a3b8' };
 const ROLE_COLORS = { admin: '#ef4444', librarian: '#3b82f6', reader: '#22c55e' };
-const CURRENT_YEAR = new Date().getFullYear();
 
 function StatCard({ icon, label, value, color }) {
   return (
@@ -114,12 +113,6 @@ export default function Dashboard() {
     color: COLORS[i % COLORS.length],
   }));
 
-  const borrowMonthly = s.monthlyBorrows || { labels: [], data: [] };
-  const monthlyData = borrowMonthly.labels.map((label, i) => ({
-    name: label,
-    'Lượt mượn': borrowMonthly.data[i] || 0,
-  }));
-
   return (
     <div className="page dashboard-page">
       <div className="page-header">
@@ -212,22 +205,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="chart-card chart-card-wide">
-          <h3 className="chart-title">Lượt mượn theo tháng ({CURRENT_YEAR})</h3>
-          {borrowMonthly.data.some(v => v > 0) ? (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={monthlyData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Lượt mượn" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="chart-empty">Chưa có lượt mượn nào trong năm {CURRENT_YEAR}.</div>
-          )}
-        </div>
+
       </div>
 
       <div className="dashboard-section">
