@@ -1,5 +1,57 @@
 const User = require('../models/User');
 
+// @desc    Lay thong tin ho so cua chinh minh
+// @route   GET /api/users/me
+// @access  Private (moi role da dang nhap)
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy user' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
+// @desc    Cap nhat ho so cua chinh minh (ten, email, doi mat khau)
+// @route   PUT /api/users/me
+// @access  Private (moi role da dang nhap)
+// Luu y: KHONG cho phep tu doi role qua route nay, tranh tu cap quyen.
+const updateMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy user' });
+
+    if (req.body.name) user.name = req.body.name;
+
+    if (req.body.email && req.body.email !== user.email) {
+      const emailTaken = await User.findOne({ email: req.body.email, _id: { $ne: user._id } });
+      if (emailTaken) return res.status(400).json({ message: 'Email đã được sử dụng' });
+      user.email = req.body.email;
+    }
+
+    if (req.body.newPassword) {
+      if (req.body.newPassword.length < 6) {
+        return res.status(400).json({ message: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+      }
+      if (!req.body.currentPassword || !(await user.matchPassword(req.body.currentPassword))) {
+        return res.status(401).json({ message: 'Mật khẩu hiện tại không đúng' });
+      }
+      user.password = req.body.newPassword;
+    }
+
+    const updated = await user.save();
+    res.json({
+      _id: updated._id,
+      name: updated.name,
+      email: updated.email,
+      role: updated.role,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server', error: error.message });
+  }
+};
+
 // @desc    Lấy danh sách tất cả user
 // @route   GET /api/users
 // @access  Private/Admin
@@ -95,6 +147,8 @@ const deleteUser = async (req, res) => {
 };
 
 module.exports = {
+  getMe,
+  updateMe,
   getUsers,
   getReaders,
   createUser,
