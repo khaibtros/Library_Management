@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'reader' });
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -13,7 +13,10 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await register(form.name, form.email, form.password, form.role);
+      // Dang ky cong khai luon la role 'reader'. Backend
+      // (authController.registerUser) cung ep cung mot gia tri
+      // nay du client gui gi len, day chi la khop UI voi logic do.
+      await register(form.name, form.email, form.password, 'reader');
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng ký thất bại');
@@ -38,14 +41,9 @@ export default function Register() {
             <label>Mật khẩu</label>
             <input name="password" type="password" value={form.password} onChange={handleChange} required />
           </div>
-          <div className="form-group">
-            <label>Vai trò</label>
-            <select name="role" value={form.role} onChange={handleChange}>
-              <option value="reader">Reader</option>
-              <option value="librarian">Librarian</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
+          <p className="form-hint">
+            Tài khoản đăng ký mới sẽ có vai trò <strong>Độc giả</strong>. Tài khoản Thủ thư/Admin do quản trị viên tạo.
+          </p>
           <button type="submit" className="btn btn-primary btn-full">Đăng ký</button>
         </form>
         <p className="auth-link">
