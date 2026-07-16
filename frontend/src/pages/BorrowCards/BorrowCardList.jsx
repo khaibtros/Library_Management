@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../api/axios';
 import BorrowStatusBadge from '../../components/common/BorrowStatusBadge';
+import { useAuth } from '../../context/AuthContext';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { formatDateTime } from '../../utils/date';
 
@@ -10,6 +11,11 @@ export default function BorrowCardList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const { user } = useAuth();
+  // Chi admin/librarian moi duoc tao/sua/xoa phieu muon, khop voi
+  // authorize('admin', 'librarian') o backend/routes/borrowRoutes.js
+  const canModify = user?.role === 'admin' || user?.role === 'librarian';
+  const isReader = user?.role === 'reader';
 
   useEffect(() => {
     let active = true;
@@ -47,12 +53,16 @@ export default function BorrowCardList() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>📋 Phiếu mượn</h1>
-          <p className="page-subtitle">Theo dõi chi tiết việc mượn và trả sách.</p>
+          <h1>📋 {isReader ? 'Phiếu mượn của tôi' : 'Phiếu mượn'}</h1>
+          <p className="page-subtitle">
+            {isReader
+              ? 'Danh sách các phiếu mượn sách của bạn.'
+              : 'Theo dõi chi tiết việc mượn và trả sách.'}
+          </p>
         </div>
         <div className="header-actions">
           {!loading && <span className="result-count">{cards.length} phiếu</span>}
-          <Link to="/borrow-cards/new" className="btn btn-primary">+ Tạo phiếu mượn</Link>
+          {canModify && <Link to="/borrow-cards/new" className="btn btn-primary">+ Tạo phiếu mượn</Link>}
         </div>
       </div>
 
@@ -91,15 +101,19 @@ export default function BorrowCardList() {
                     <td><BorrowStatusBadge status={card.status} /></td>
                     <td className="actions">
                       <Link to={`/borrow-cards/${card._id}`} className="btn btn-sm btn-view">Chi tiết</Link>
-                      <Link to={`/borrow-cards/${card._id}/edit`} className="btn btn-sm btn-edit">Sửa</Link>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-delete"
-                        onClick={() => handleDelete(card)}
-                        disabled={deletingId === card._id}
-                      >
-                        {deletingId === card._id ? 'Đang xóa...' : 'Xóa'}
-                      </button>
+                      {canModify && (
+                        <>
+                          <Link to={`/borrow-cards/${card._id}/edit`} className="btn btn-sm btn-edit">Sửa</Link>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-delete"
+                            onClick={() => handleDelete(card)}
+                            disabled={deletingId === card._id}
+                          >
+                            {deletingId === card._id ? 'Đang xóa...' : 'Xóa'}
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 );
