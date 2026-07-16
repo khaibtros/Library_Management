@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import UserList from './pages/Users/UserList';
 import UserForm from './pages/Users/UserForm';
 import BookList from './pages/Books/BookList';
+import BookDetail from './pages/Books/BookDetail';
 import BookForm from './pages/Books/BookForm';
 import BorrowCardList from './pages/BorrowCards/BorrowCardList';
 import BorrowCardForm from './pages/BorrowCards/BorrowCardForm';
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="books" element={<BookList />} />
             <Route path="books/new" element={<PrivateRoute roles={['admin', 'librarian']}><BookForm /></PrivateRoute>} />
             <Route path="books/edit/:id" element={<PrivateRoute roles={['admin', 'librarian']}><BookForm /></PrivateRoute>} />
+            <Route path="books/:id" element={<BookDetail />} />
 
             {/* Phieu muon: moi role da dang nhap xem duoc (reader chi thay
                 phieu cua chinh minh, loc o backend/controllers/borrowController.js).

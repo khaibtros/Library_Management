@@ -245,6 +245,38 @@ a:hover {
   font-weight: 600;
 }
 
+.cell-link {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.cell-link:hover {
+  text-decoration: underline;
+}
+
+.search-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.search-bar .form-group {
+  margin-bottom: 0;
+  min-width: 200px;
+  flex: 1;
+}
+
+.search-bar-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .cell-secondary {
   color: var(--text-light);
   font-size: 0.8rem;
