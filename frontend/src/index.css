@@ -108,6 +108,12 @@ a:hover {
 .navbar-user {
   color: var(--text-light);
   font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.navbar-user:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .app-body {
@@ -632,6 +638,11 @@ a:hover {
 
 .form-group {
   margin-bottom: 1rem;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {

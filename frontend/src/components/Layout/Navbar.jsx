@@ -14,7 +14,7 @@ export default function Navbar() {
     <nav className="navbar">
       <Link to="/" className="navbar-brand">📚 Library Management</Link>
       <div className="navbar-menu">
-        <span className="navbar-user">Xin chào, {user?.name}</span>
+        <Link to="/profile" className="navbar-user">👤 {user?.name}</Link>
         <button onClick={handleLogout} className="btn btn-logout">Đăng xuất</button>
       </div>
     </nav>

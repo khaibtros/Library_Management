@@ -37,8 +37,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Dung sau khi PUT /users/me thanh cong, de dong bo lai ten/email
+  // hien thi (Navbar...) ma khong can dang nhap lai. Token khong doi.
+  const updateUser = (partialData) => {
+    setUser((current) => {
+      if (!current) return current;
+      const next = { ...current, ...partialData };
+      localStorage.setItem('user', JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
