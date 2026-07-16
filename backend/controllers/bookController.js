@@ -24,7 +24,8 @@ const getBookById = async (req, res) => {
 
 // Create a new book
 const createBook = async (req, res) => {
-  const { title, author, isbn, publishedYear, category, totalQuantity, availableQuantity } = req.body;
+  if (Object.prototype.hasOwnProperty.call(req.body, 'availableQuantity')) return res.status(400).json({ message: 'availableQuantity do hệ thống quản lý khi tạo sách' });
+  const { title, author, isbn, publishedYear, category, totalQuantity } = req.body;
   const book = new Book({
     title,
     author,
@@ -32,7 +33,7 @@ const createBook = async (req, res) => {
     publishedYear,
     category,
     totalQuantity,
-    availableQuantity: availableQuantity === undefined ? totalQuantity : availableQuantity
+    availableQuantity: totalQuantity
   });
 
   try {
@@ -46,7 +47,8 @@ const createBook = async (req, res) => {
 // Update a book
 const updateBook = async (req, res) => {
   try {
-    const { availableQuantity, stockAdjustments, ...metadata } = req.body;
+    if (Object.prototype.hasOwnProperty.call(req.body, 'availableQuantity') || Object.prototype.hasOwnProperty.call(req.body, 'stockAdjustments')) return res.status(400).json({ message: 'Tồn kho chỉ được thay đổi qua thao tác điều chỉnh tồn' });
+    const metadata = req.body;
     const currentBook = await Book.findById(req.params.id);
     if (!currentBook) return res.status(404).json({ message: 'Book not found' });
     if (metadata.totalQuantity !== undefined && Number(metadata.totalQuantity) < currentBook.availableQuantity) return res.status(400).json({ message: 'Tổng số lượng không thể thấp hơn số lượng hiện có' });
@@ -76,8 +78,8 @@ const adjustStock = async (req, res) => {
 // Delete a book
 const deleteBook = async (req, res) => {
   try {
-    const activeCard = await BorrowCard.exists({ status: { $in: ['borrowed', 'overdue'] }, 'borrowedBooks.book': req.params.id });
-    if (activeCard) return res.status(400).json({ message: 'Không thể xóa sách đang có trong phiếu mượn hoạt động' });
+    const cardHistory = await BorrowCard.exists({ 'borrowedBooks.book': req.params.id });
+    if (cardHistory) return res.status(400).json({ message: 'Không thể xóa sách đã có lịch sử mượn' });
     const book = await Book.findByIdAndDelete(req.params.id);
     if (!book) return res.status(404).json({ message: 'Book not found' });
     res.status(200).json({ message: 'Book deleted successfully' });

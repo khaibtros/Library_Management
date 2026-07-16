@@ -211,7 +211,7 @@ export default function BorrowCardForm() {
                 <label>Người xử lý</label>
                 <div className="readonly-field">
                   <strong>Tài khoản đang đăng nhập</strong>
-                  <span>Backend sẽ tự động ghi nhận người tạo phiếu.</span>
+                  <span>Hệ thống sẽ tự động ghi nhận người tạo phiếu.</span>
                 </div>
               </div>
             </div>
