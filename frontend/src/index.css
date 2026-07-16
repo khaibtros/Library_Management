@@ -348,6 +348,11 @@ a:hover {
   white-space: nowrap;
 }
 
+.borrow-status-pending {
+  background: #fef9c3;
+  color: #a16207;
+}
+
 .borrow-status-borrowed {
   background: #dbeafe;
   color: #1d4ed8;
@@ -543,6 +548,20 @@ a:hover {
 
 .detail-section {
   margin-top: 1rem;
+}
+
+.action-group {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.action-group:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.action-group p {
+  margin: 0 0 0.5rem;
 }
 
 .status-summary>.borrow-status {

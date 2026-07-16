@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import API from '../../api/axios';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { BORROW_STATUSES, BORROW_STATUS_VALUES } from '../../utils/borrowStatus';
+import { BORROW_STATUSES, MANUAL_BORROW_STATUS_VALUES } from '../../utils/borrowStatus';
 import { toDateTimeLocal, toIsoString } from '../../utils/date';
 
 const emptyBorrowedBook = () => ({ book: '', quantity: 1 });
@@ -300,7 +300,7 @@ export default function BorrowCardForm() {
         <section className="form-section">
           <h2>Trạng thái</h2>
           <div className="status-options">
-            {BORROW_STATUS_VALUES.map((status) => {
+            {MANUAL_BORROW_STATUS_VALUES.map((status) => {
               const config = BORROW_STATUSES[status];
               return (
                 <label key={status} className={`status-option status-option-${status} ${form.status === status ? 'selected' : ''}`}>
