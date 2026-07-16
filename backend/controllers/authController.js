@@ -33,11 +33,14 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Đăng ký user (Dành cho admin hoặc initial setup)
+// @desc    Đăng ký tài khoản độc giả (public)
 // @route   POST /api/auth/register
-// @access  Public (hoặc Admin tuỳ logic sau này)
+// @access  Public
+// Lưu ý bảo mật: đăng ký công khai LUÔN tạo role 'reader', bất kể client gửi
+// gì trong body. Tài khoản admin/librarian chỉ được tạo bởi admin thông qua
+// route riêng POST /api/users (xem userController.createUser).
 const registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   try {
     const userExists = await User.findOne({ email });
@@ -50,7 +53,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password,
-      role: role || 'reader',
+      role: 'reader',
     });
 
     if (user) {
