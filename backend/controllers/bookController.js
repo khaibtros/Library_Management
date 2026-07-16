@@ -1,9 +1,23 @@
 const Book = require('../models/Book');
 
-// Get all books
+// Get all books (ho tro tim kiem qua query params: ?title=...&author=...&q=...)
+// - q: tim theo ca title lan author (khong phan biet hoa/thuong)
+// - title: chi tim theo ten sach
+// - author: chi tim theo tac gia
 const getBooks = async (req, res) => {
   try {
-    const books = await Book.find();
+    const { title, author, q } = req.query;
+    const filter = {};
+
+    if (q) {
+      const regex = { $regex: q, $options: 'i' };
+      filter.$or = [{ title: regex }, { author: regex }];
+    } else {
+      if (title) filter.title = { $regex: title, $options: 'i' };
+      if (author) filter.author = { $regex: author, $options: 'i' };
+    }
+
+    const books = await Book.find(filter).sort({ title: 1 });
     res.status(200).json(books);
   } catch (error) {
     res.status(500).json({ message: error.message });
