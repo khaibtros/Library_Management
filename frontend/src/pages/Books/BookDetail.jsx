@@ -89,14 +89,24 @@ export default function BookDetail() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      <div className="detail-grid">
+      <div className="detail-grid book-detail-grid">
+        <section className="detail-card book-cover-card">
+          {book.image ? (
+            <img src={book.image} alt={book.title} className="book-cover-large" />
+          ) : (
+            <div className="book-cover-large book-cover-placeholder">📖</div>
+          )}
+        </section>
+
         <section className="detail-card">
           <h2>Thông tin sách</h2>
           <dl className="detail-list">
             <div><dt>Tác giả</dt><dd>{book.author}</dd></div>
             <div><dt>ISBN</dt><dd className="code-value">{book.isbn}</dd></div>
+            <div><dt>Nhà xuất bản</dt><dd>{book.publisher || '—'}</dd></div>
             <div><dt>Thể loại</dt><dd>{book.category || '—'}</dd></div>
             <div><dt>Năm xuất bản</dt><dd>{book.publishedYear || '—'}</dd></div>
+            <div><dt>Vị trí kệ</dt><dd>{book.shelfLocation || '—'}</dd></div>
           </dl>
         </section>
 
@@ -104,16 +114,23 @@ export default function BookDetail() {
           <h2>Số lượng</h2>
           <dl className="detail-list compact">
             <div><dt>Tổng số</dt><dd>{book.totalQuantity}</dd></div>
-            <div><dt>Còn sẵn</dt><dd>{book.availableQuantity}</dd></div>
+            <div><dt>Còn sẵn</dt><dd>{book.availableQuantity > 0 ? book.availableQuantity : <span className="badge badge-out-of-stock">Hết sách</span>}</dd></div>
           </dl>
         </section>
       </div>
 
+      {book.description && (
+        <section className="detail-card detail-section">
+          <h2>Mô tả</h2>
+          <p>{book.description}</p>
+        </section>
+      )}
+
       {isReader && (
         <section className="detail-card detail-section">
-          <h2>Gửi yêu cầu mượn sách</h2>
+          <h2>Mượn sách</h2>
           {book.availableQuantity < 1 ? (
-            <p className="text-muted">Sách hiện đã hết, không thể gửi yêu cầu mượn.</p>
+            <p className="text-muted">Sách hiện đã hết, không thể mượn.</p>
           ) : (
             <form onSubmit={handleBorrowRequest} className="form-row">
               <div className="form-group quantity-field">
@@ -131,7 +148,7 @@ export default function BookDetail() {
               </div>
               <div className="form-group" style={{ alignSelf: 'flex-end' }}>
                 <button type="submit" className="btn btn-primary" disabled={requesting}>
-                  {requesting ? 'Đang gửi...' : '📩 Gửi yêu cầu mượn'}
+                  {requesting ? 'Đang gửi...' : '📚 Mượn sách'}
                 </button>
               </div>
             </form>

@@ -7,8 +7,12 @@ const initialForm = {
   title: '',
   author: '',
   isbn: '',
+  publisher: '',
   publishedYear: '',
   category: '',
+  description: '',
+  shelfLocation: '',
+  image: '',
   totalQuantity: 1,
   availableQuantity: 1,
 };
@@ -34,8 +38,12 @@ export default function BookForm() {
           title: data.title || '',
           author: data.author || '',
           isbn: data.isbn || '',
+          publisher: data.publisher || '',
           publishedYear: data.publishedYear ?? '',
           category: data.category || '',
+          description: data.description || '',
+          shelfLocation: data.shelfLocation || '',
+          image: data.image || '',
           totalQuantity: data.totalQuantity ?? 1,
           availableQuantity: data.availableQuantity ?? 1,
         });
@@ -79,7 +87,11 @@ export default function BookForm() {
       title: form.title.trim(),
       author: form.author.trim(),
       isbn: form.isbn.trim(),
+      publisher: form.publisher.trim(),
       category: form.category.trim(),
+      description: form.description.trim(),
+      shelfLocation: form.shelfLocation.trim(),
+      image: form.image.trim(),
       totalQuantity,
       availableQuantity,
       ...(publishedYear !== undefined && { publishedYear }),
@@ -120,23 +132,43 @@ export default function BookForm() {
             <input id="isbn" name="isbn" value={form.isbn} onChange={handleChange} required />
           </div>
           <div className="form-group">
-            <label htmlFor="publishedYear">Năm xuất bản</label>
-            <input id="publishedYear" name="publishedYear" type="number" min="0" value={form.publishedYear} onChange={handleChange} />
+            <label htmlFor="publisher">Nhà xuất bản</label>
+            <input id="publisher" name="publisher" value={form.publisher} onChange={handleChange} />
           </div>
         </div>
         <div className="form-row">
           <div className="form-group">
+            <label htmlFor="publishedYear">Năm xuất bản</label>
+            <input id="publishedYear" name="publishedYear" type="number" min="0" value={form.publishedYear} onChange={handleChange} />
+          </div>
+          <div className="form-group">
             <label htmlFor="category">Thể loại</label>
             <input id="category" name="category" value={form.category} onChange={handleChange} />
           </div>
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="shelfLocation">Vị trí kệ</label>
+            <input id="shelfLocation" name="shelfLocation" placeholder="VD: Kệ A1 - Tầng 2" value={form.shelfLocation} onChange={handleChange} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="image">Ảnh bìa (URL)</label>
+            <input id="image" name="image" placeholder="https://..." value={form.image} onChange={handleChange} />
+          </div>
+        </div>
+        <div className="form-group">
+          <label htmlFor="description">Mô tả</label>
+          <textarea id="description" name="description" rows="3" value={form.description} onChange={handleChange} />
+        </div>
+        <div className="form-row">
           <div className="form-group">
             <label htmlFor="totalQuantity">Tổng số lượng</label>
             <input id="totalQuantity" name="totalQuantity" type="number" min="1" step="1" value={form.totalQuantity} onChange={handleChange} required />
           </div>
-        </div>
-        <div className="form-group">
-          <label htmlFor="availableQuantity">Số lượng có sẵn</label>
-          <input id="availableQuantity" name="availableQuantity" type="number" min="0" step="1" value={form.availableQuantity} onChange={handleChange} required />
+          <div className="form-group">
+            <label htmlFor="availableQuantity">Số lượng có sẵn</label>
+            <input id="availableQuantity" name="availableQuantity" type="number" min="0" step="1" value={form.availableQuantity} onChange={handleChange} required />
+          </div>
         </div>
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>

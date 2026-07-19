@@ -653,7 +653,8 @@ a:hover {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
@@ -663,7 +664,8 @@ a:hover {
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
@@ -776,6 +778,41 @@ box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
   justify-content: center;
   background: #f1f5f9;
   font-size: 1.2rem;
+}
+
+.book-detail-grid {
+  grid-template-columns: 160px 1fr 1fr;
+}
+
+.book-cover-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.book-cover-large {
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.book-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  font-size: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .book-detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .badge-out-of-stock {
