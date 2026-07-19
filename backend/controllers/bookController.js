@@ -1,24 +1,51 @@
 const Book = require('../models/Book');
 
-// Get all books (ho tro tim kiem qua query params: ?title=...&author=...&q=...)
-// - q: tim theo ca title lan author (khong phan biet hoa/thuong)
-// - title: chi tim theo ten sach
-// - author: chi tim theo tac gia
+// Get all books - ho tro pagination, search, sort
+// Query: ?page=1&limit=10&keyword=java&category=IT&author=Nguyen&sort=title
+// (giu tuong thich nguoc voi ?q=, ?title=, ?author= cua phien ban truoc)
 const getBooks = async (req, res) => {
   try {
-    const { title, author, q } = req.query;
-    const filter = {};
+    const { keyword, q, title, author, category, sort } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 10));
 
-    if (q) {
-      const regex = { $regex: q, $options: 'i' };
-      filter.$or = [{ title: regex }, { author: regex }];
+    const filter = {};
+    const term = keyword || q;
+    if (term) {
+      const regex = { $regex: term, $options: 'i' };
+      filter.$or = [
+        { title: regex },
+        { author: regex },
+        { isbn: regex },
+        { publisher: regex },
+      ];
     } else {
       if (title) filter.title = { $regex: title, $options: 'i' };
       if (author) filter.author = { $regex: author, $options: 'i' };
     }
+    if (category) filter.category = { $regex: `^${category}$`, $options: 'i' };
 
-    const books = await Book.find(filter).sort({ title: 1 });
-    res.status(200).json(books);
+    const sortableFields = ['title', 'author', 'publishedYear', 'availableQuantity', 'createdAt'];
+    let sortBy = { title: 1 };
+    if (sort) {
+      const direction = sort.startsWith('-') ? -1 : 1;
+      const field = sort.replace('-', '');
+      if (sortableFields.includes(field)) sortBy = { [field]: direction };
+    }
+
+    const total = await Book.countDocuments(filter);
+    const books = await Book.find(filter)
+      .sort(sortBy)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.status(200).json({
+      data: books,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit) || 1,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -37,13 +64,20 @@ const getBookById = async (req, res) => {
 
 // Create a new book
 const createBook = async (req, res) => {
-  const { title, author, isbn, publishedYear, category, totalQuantity, availableQuantity } = req.body;
+  const {
+    title, author, isbn, publisher, publishedYear, category,
+    description, shelfLocation, image, totalQuantity, availableQuantity,
+  } = req.body;
   const book = new Book({
     title,
     author,
     isbn,
+    publisher,
     publishedYear,
     category,
+    description,
+    shelfLocation,
+    image,
     totalQuantity,
     availableQuantity
   });

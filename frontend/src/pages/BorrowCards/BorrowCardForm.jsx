@@ -34,11 +34,11 @@ export default function BorrowCardForm() {
         if (isEdit) {
           const [{ data: card }, { data: bookData }] = await Promise.all([
             API.get(`/borrow-cards/${id}`),
-            API.get('/books'),
+            API.get('/books', { params: { limit: 1000 } }),
           ]);
           if (!active) return;
 
-          setBooks(Array.isArray(bookData) ? bookData : []);
+          setBooks(Array.isArray(bookData?.data) ? bookData.data : []);
           setReader(card.reader || null);
           setProcessedBy(card.processedBy || null);
           setForm({
@@ -56,11 +56,11 @@ export default function BorrowCardForm() {
           });
         } else {
           const [{ data: bookData }, { data: readerData }] = await Promise.all([
-            API.get('/books'),
+            API.get('/books', { params: { limit: 1000 } }),
             API.get('/users/readers'),
           ]);
           if (!active) return;
-          setBooks(Array.isArray(bookData) ? bookData : []);
+          setBooks(Array.isArray(bookData?.data) ? bookData.data : []);
           setReaders(Array.isArray(readerData) ? readerData : []);
         }
       } catch (requestError) {
