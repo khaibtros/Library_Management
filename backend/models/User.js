@@ -5,11 +5,38 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    trim: true,
+    minlength: 3,
+    maxlength: 50,
   },
   email: {
     type: String,
     required: true,
     unique: true,
+    trim: true,
+    lowercase: true,
+  },
+  // Ma sinh vien - chi bat buoc/unique cho tai khoan tu dang ky (role reader).
+  // sparse:true de cho phep nhieu document co studentId = null/undefined
+  // (vi du tai khoan admin tao tay khong nhap ma SV) ma khong vi pham unique.
+  studentId: {
+    type: String,
+    trim: true,
+    unique: true,
+    sparse: true,
+  },
+  phone: {
+    type: String,
+    trim: true,
+  },
+  address: {
+    type: String,
+    trim: true,
+  },
+  // Duong dan tuong doi toi file avatar (vd: /uploads/avatars/xxx.jpg)
+  avatar: {
+    type: String,
+    default: null,
   },
   password: {
     type: String,
@@ -19,6 +46,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['admin', 'librarian', 'reader'],
     default: 'reader',
+  },
+  // Tai khoan bi block se khong dang nhap duoc (kiem tra o loginUser)
+  status: {
+    type: String,
+    enum: ['active', 'blocked'],
+    default: 'active',
   },
 }, { timestamps: true });
 
