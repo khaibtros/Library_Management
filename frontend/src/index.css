@@ -55,6 +55,10 @@ a:hover {
   max-width: 420px;
 }
 
+.auth-card-wide {
+  max-width: 560px;
+}
+
 .auth-card h1 {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -444,6 +448,12 @@ a:hover {
 
 .field-hint {
   color: var(--text-light);
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.field-error {
+  color: var(--danger);
   font-size: 0.8rem;
   margin-top: 0.4rem;
 }
