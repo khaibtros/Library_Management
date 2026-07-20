@@ -7,7 +7,7 @@ import {
 } from 'recharts';
 
 const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
-const BORROW_COLORS = { borrowed: '#3b82f6', returned: '#22c55e', overdue: '#ef4444', cancelled: '#94a3b8' };
+const BORROW_COLORS = { borrowed: '#3b82f6', returned: '#22c55e', overdue: '#ef4444', rejected: '#94a3b8' };
 const ROLE_COLORS = { admin: '#ef4444', librarian: '#3b82f6', reader: '#22c55e' };
 
 function StatCard({ icon, label, value, color }) {
@@ -104,7 +104,7 @@ export default function Dashboard() {
     { name: 'Đang mượn', value: s.totalBorrowed, color: BORROW_COLORS.borrowed },
     { name: 'Đã trả', value: s.totalReturned, color: BORROW_COLORS.returned },
     { name: 'Quá hạn', value: s.totalOverdue, color: BORROW_COLORS.overdue },
-    { name: 'Đã hủy', value: s.totalCancelled, color: BORROW_COLORS.cancelled },
+    { name: 'Đã từ chối', value: s.totalRejected, color: BORROW_COLORS.rejected },
   ].filter(d => d.value > 0);
 
   const categoryData = (s.booksByCategory || []).map((item, i) => ({

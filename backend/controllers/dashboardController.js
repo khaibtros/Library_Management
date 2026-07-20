@@ -14,10 +14,11 @@ const getDashboardStats = async (req, res) => {
     const librarianCount = await User.countDocuments({ role: 'librarian' });
     const readerCount = await User.countDocuments({ role: 'reader' });
 
-    const totalBorrowed = await BorrowCard.countDocuments({ status: 'borrowed' });
-    const totalOverdue = await BorrowCard.countDocuments({ status: 'overdue' });
+    const totalBorrowed = await BorrowCard.countDocuments({ status: 'borrowing' });
+    const totalOverdue = await BorrowCard.countDocuments({ status: 'borrowing', dueDate: { $lt: new Date() } });
     const totalReturned = await BorrowCard.countDocuments({ status: 'returned' });
-    const totalCancelled = await BorrowCard.countDocuments({ status: 'cancelled' });
+    const totalPending = await BorrowCard.countDocuments({ status: 'pending' });
+    const totalRejected = await BorrowCard.countDocuments({ status: 'rejected' });
 
     const booksByCategory = await Book.aggregate([
       {
@@ -72,7 +73,8 @@ const getDashboardStats = async (req, res) => {
       totalBorrowed,
       totalOverdue,
       totalReturned,
-      totalCancelled,
+      totalPending,
+      totalRejected,
       users: {
         total: totalUsers,
         admin: adminCount,
