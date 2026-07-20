@@ -439,11 +439,59 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.65rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.readonly-field label {
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .readonly-field span {
   color: var(--text-light);
   font-size: 0.82rem;
+}
+
+.avatar-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+}
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border);
+}
+
+.avatar-preview-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  font-size: 3rem;
+}
+
+.profile-grid {
+  grid-template-columns: 240px 1fr;
+  align-items: start;
+}
+
+.profile-grid > .avatar-card {
+  grid-row: span 2;
+}
+
+@media (max-width: 700px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-grid > .avatar-card {
+    grid-row: auto;
+  }
 }
 
 .field-hint {
