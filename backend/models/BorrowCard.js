@@ -34,25 +34,30 @@ const borrowCardSchema = new mongoose.Schema({
   returnDate: {
     type: Date,
   },
-  // Doc gia bam "Gui yeu cau tra" -> true. Admin/Librarian xac nhan tra
-  // xong se dat lai ve false va chuyen status sang 'returned'.
-  returnRequested: {
-    type: Boolean,
-    default: false,
+  // So lan da gia han (toi da MAX_RENEWAL_COUNT = 2, xem borrowController.js)
+  renewCount: {
+    type: Number,
+    default: 0,
   },
-  // Doc gia bam "Gui yeu cau gia han" -> true, kem han moi de xuat.
-  // Admin/Librarian duyet se ap dung requestedDueDate vao dueDate.
-  renewalRequested: {
-    type: Boolean,
-    default: false,
+  // So ngay tra tre, tinh khi returnBook() neu returnDate > dueDate
+  lateDays: {
+    type: Number,
+    default: 0,
   },
-  requestedDueDate: {
-    type: Date,
+  // Tien phat tre han (VND) = lateDays * FINE_PER_LATE_DAY
+  fine: {
+    type: Number,
+    default: 0,
   },
   status: {
     type: String,
-    enum: ['pending', 'borrowed', 'returned', 'overdue', 'cancelled'],
-    default: 'borrowed',
+    // pending: cho duyet | approved: da duyet (chuyen thang sang
+    // borrowing khi tru kho) | borrowing: dang muon | returned: da tra |
+    // rejected: bi tu choi. 'overdue' KHONG luu trong DB, duoc tinh dong
+    // (status='borrowing' && dueDate qua han) de hien badge, tranh can cron
+    // job cap nhat dinh ky.
+    enum: ['pending', 'approved', 'borrowing', 'returned', 'rejected'],
+    default: 'borrowing',
   }
 }, { timestamps: true });
 

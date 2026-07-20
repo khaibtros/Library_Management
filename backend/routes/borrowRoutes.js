@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getBorrowCards,
+  getMyHistory,
   getBorrowCardById,
   createBorrowCard,
   updateBorrowCard,
@@ -9,11 +10,8 @@ const {
   createBorrowRequest,
   approveBorrowRequest,
   rejectBorrowRequest,
-  requestReturn,
-  confirmReturn,
-  requestRenewal,
-  approveRenewal,
-  rejectRenewal,
+  returnBook,
+  renewBook,
 } = require('../controllers/borrowController');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -29,6 +27,9 @@ router.route('/')
 // Doc gia gui yeu cau muon sach (tao phieu 'pending', chua tru so luong)
 router.post('/request', protect, createBorrowRequest);
 
+// Lich su muon cua chinh minh (filter status/khoang ngay + phan trang)
+router.get('/my-history', protect, getMyHistory);
+
 router.route('/:id')
   .get(protect, getBorrowCardById)
   .put(protect, authorize('admin', 'librarian'), updateBorrowCard)
@@ -38,13 +39,9 @@ router.route('/:id')
 router.put('/:id/approve', protect, authorize('admin', 'librarian'), approveBorrowRequest);
 router.put('/:id/reject', protect, authorize('admin', 'librarian'), rejectBorrowRequest);
 
-// Gui yeu cau tra sach (chu phieu hoac admin/librarian) & xac nhan da tra (admin/librarian)
-router.put('/:id/request-return', protect, requestReturn);
-router.put('/:id/confirm-return', protect, authorize('admin', 'librarian'), confirmReturn);
-
-// Gui yeu cau gia han (chu phieu hoac admin/librarian) & duyet/tu choi (admin/librarian)
-router.put('/:id/request-renewal', protect, requestRenewal);
-router.put('/:id/approve-renewal', protect, authorize('admin', 'librarian'), approveRenewal);
-router.put('/:id/reject-renewal', protect, authorize('admin', 'librarian'), rejectRenewal);
+// Tra sach & gia han: tu doc gia (chu phieu) hoac admin/librarian,
+// KHONG can duyet - xem borrowController.returnBook/renewBook
+router.put('/:id/return', protect, returnBook);
+router.put('/:id/renew', protect, renewBook);
 
 module.exports = router;
