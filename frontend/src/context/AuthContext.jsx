@@ -18,18 +18,26 @@ export const AuthProvider = ({ children }) => {
   });
   const loading = false;
 
+  // Backend tra ve { token, user }. Gop lai thanh 1 object phang de
+  // phan con lai cua app (Navbar, Sidebar...) truy cap truc tiep
+  // user.name, user.role... nhu truoc, khong can sua lai moi noi.
+  const flattenAuthResponse = (data) => ({ ...data.user, token: data.token });
+
   const login = async (email, password) => {
     const { data } = await API.post('/auth/login', { email, password });
-    localStorage.setItem('user', JSON.stringify(data));
-    setUser(data);
-    return data;
+    const flat = flattenAuthResponse(data);
+    localStorage.setItem('user', JSON.stringify(flat));
+    setUser(flat);
+    return flat;
   };
 
-  const register = async (name, email, password, role) => {
-    const { data } = await API.post('/auth/register', { name, email, password, role });
-    localStorage.setItem('user', JSON.stringify(data));
-    setUser(data);
-    return data;
+  // form: { name, email, studentId, phone, address, password, confirmPassword }
+  const register = async (form) => {
+    const { data } = await API.post('/auth/register', form);
+    const flat = flattenAuthResponse(data);
+    localStorage.setItem('user', JSON.stringify(flat));
+    setUser(flat);
+    return flat;
   };
 
   const logout = () => {
@@ -37,8 +45,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Dung sau khi PUT /users/me thanh cong, de dong bo lai ten/email
+  // hien thi (Navbar...) ma khong can dang nhap lai. Token khong doi.
+  const updateUser = (partialData) => {
+    setUser((current) => {
+      if (!current) return current;
+      const next = { ...current, ...partialData };
+      localStorage.setItem('user', JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

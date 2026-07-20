@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import API from '../../api/axios';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { BORROW_STATUSES, BORROW_STATUS_VALUES } from '../../utils/borrowStatus';
+import { BORROW_STATUSES, MANUAL_BORROW_STATUS_VALUES } from '../../utils/borrowStatus';
 import { toDateTimeLocal, toIsoString } from '../../utils/date';
 
 const emptyBorrowedBook = () => ({ book: '', quantity: 1 });
@@ -21,7 +21,7 @@ export default function BorrowCardForm() {
     borrowDate: toDateTimeLocal(new Date()),
     dueDate: '',
     returnDate: '',
-    status: 'borrowed',
+    status: 'borrowing',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,11 +34,11 @@ export default function BorrowCardForm() {
         if (isEdit) {
           const [{ data: card }, { data: bookData }] = await Promise.all([
             API.get(`/borrow-cards/${id}`),
-            API.get('/books'),
+            API.get('/books', { params: { limit: 1000 } }),
           ]);
           if (!active) return;
 
-          setBooks(Array.isArray(bookData) ? bookData : []);
+          setBooks(Array.isArray(bookData?.data) ? bookData.data : []);
           setReader(card.reader || null);
           setProcessedBy(card.processedBy || null);
           setForm({
@@ -52,15 +52,15 @@ export default function BorrowCardForm() {
             borrowDate: toDateTimeLocal(card.borrowDate),
             dueDate: toDateTimeLocal(card.dueDate),
             returnDate: toDateTimeLocal(card.returnDate),
-            status: card.status || 'borrowed',
+            status: card.status || 'borrowing',
           });
         } else {
           const [{ data: bookData }, { data: readerData }] = await Promise.all([
-            API.get('/books'),
+            API.get('/books', { params: { limit: 1000 } }),
             API.get('/users/readers'),
           ]);
           if (!active) return;
-          setBooks(Array.isArray(bookData) ? bookData : []);
+          setBooks(Array.isArray(bookData?.data) ? bookData.data : []);
           setReaders(Array.isArray(readerData) ? readerData : []);
         }
       } catch (requestError) {
@@ -300,7 +300,7 @@ export default function BorrowCardForm() {
         <section className="form-section">
           <h2>Trạng thái</h2>
           <div className="status-options">
-            {BORROW_STATUS_VALUES.map((status) => {
+            {MANUAL_BORROW_STATUS_VALUES.map((status) => {
               const config = BORROW_STATUSES[status];
               return (
                 <label key={status} className={`status-option status-option-${status} ${form.status === status ? 'selected' : ''}`}>

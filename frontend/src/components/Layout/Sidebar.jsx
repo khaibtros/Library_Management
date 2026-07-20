@@ -11,6 +11,12 @@ export default function Sidebar() {
         <NavLink to="/dashboard" className={linkClass}>
           📊 Dashboard
         </NavLink>
+        <NavLink to="/books" className={linkClass}>
+          📖 Sách
+        </NavLink>
+        <NavLink to="/borrow-cards" className={linkClass}>
+          📋 {user?.role === 'reader' ? 'Phiếu mượn của tôi' : 'Phiếu mượn'}
+        </NavLink>
         {user?.role === 'admin' && (
           <NavLink to="/users" className={linkClass}>
             👥 Người dùng

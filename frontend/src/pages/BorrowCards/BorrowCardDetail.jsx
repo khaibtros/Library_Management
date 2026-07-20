@@ -2,16 +2,32 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import API from '../../api/axios';
 import BorrowStatusBadge from '../../components/common/BorrowStatusBadge';
+import { useAuth } from '../../context/AuthContext';
 import { getApiErrorMessage } from '../../utils/apiError';
 import { formatDateTime } from '../../utils/date';
+import { getEffectiveStatus } from '../../utils/borrowStatus';
+
+const MAX_RENEWAL_COUNT = 2;
 
 export default function BorrowCardDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [card, setCard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const canModify = user?.role === 'admin' || user?.role === 'librarian';
+  const isOwner = card?.reader?._id === user?._id;
+
+  const reloadCard = async () => {
+    const { data } = await API.get(`/borrow-cards/${id}`);
+    setCard(data);
+  };
 
   useEffect(() => {
     let active = true;
@@ -42,6 +58,52 @@ export default function BorrowCardDetail() {
     }
   };
 
+  const runAction = async (actionFn, successMessage) => {
+    setActionError('');
+    setActionMessage('');
+    setActionLoading(true);
+    try {
+      await actionFn();
+      await reloadCard();
+      setActionMessage(successMessage);
+    } catch (requestError) {
+      setActionError(getApiErrorMessage(requestError, 'Không thể thực hiện thao tác này.'));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApprove = () => runAction(
+    () => API.put(`/borrow-cards/${id}/approve`),
+    'Đã duyệt yêu cầu mượn sách.',
+  );
+
+  const handleReject = () => {
+    if (!window.confirm('Từ chối yêu cầu mượn sách này?')) return;
+    runAction(
+      () => API.put(`/borrow-cards/${id}/reject`),
+      'Đã từ chối yêu cầu mượn sách.',
+    );
+  };
+
+  // Tra sach / gia han: TU doc gia thao tac, KHONG can admin duyet
+  // (xem backend/controllers/borrowController.js returnBook/renewBook)
+  const handleReturn = () => {
+    if (!window.confirm('Xác nhận trả sách? Nếu quá hạn, tiền phạt sẽ được tính tự động.')) return;
+    runAction(
+      () => API.put(`/borrow-cards/${id}/return`),
+      'Đã trả sách thành công.',
+    );
+  };
+
+  const handleRenew = () => {
+    if (!window.confirm('Gia hạn thêm 7 ngày cho phiếu mượn này?')) return;
+    runAction(
+      () => API.put(`/borrow-cards/${id}/renew`),
+      'Đã gia hạn thêm 7 ngày.',
+    );
+  };
+
   if (loading) return <div className="loading-panel">Đang tải chi tiết phiếu mượn...</div>;
 
   if (!card) {
@@ -53,6 +115,8 @@ export default function BorrowCardDetail() {
     );
   }
 
+  const effectiveStatus = getEffectiveStatus(card);
+
   return (
     <div className="page">
       <div className="page-header">
@@ -61,10 +125,14 @@ export default function BorrowCardDetail() {
           <p className="page-subtitle">Mã phiếu: {card._id}</p>
         </div>
         <div className="actions">
-          <Link to={`/borrow-cards/${id}/edit`} className="btn btn-edit">Sửa phiếu</Link>
-          <button type="button" className="btn btn-delete" onClick={handleDelete} disabled={deleting}>
-            {deleting ? 'Đang xóa...' : 'Xóa phiếu'}
-          </button>
+          {canModify && (
+            <>
+              <Link to={`/borrow-cards/${id}/edit`} className="btn btn-edit">Sửa phiếu</Link>
+              <button type="button" className="btn btn-delete" onClick={handleDelete} disabled={deleting}>
+                {deleting ? 'Đang xóa...' : 'Xóa phiếu'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -82,10 +150,16 @@ export default function BorrowCardDetail() {
 
         <section className="detail-card status-summary">
           <h2>Trạng thái</h2>
-          <BorrowStatusBadge status={card.status} />
+          <BorrowStatusBadge status={effectiveStatus} />
           <dl className="detail-list compact">
             <div><dt>Người xử lý</dt><dd>{card.processedBy?.name || '—'}</dd></div>
-            <div><dt>Email</dt><dd>{card.processedBy?.email || '—'}</dd></div>
+            <div><dt>Số lần gia hạn</dt><dd>{card.renewCount || 0}/{MAX_RENEWAL_COUNT}</dd></div>
+            {card.status === 'returned' && (card.fine > 0 || card.lateDays > 0) && (
+              <>
+                <div><dt>Số ngày trễ</dt><dd>{card.lateDays || 0} ngày</dd></div>
+                <div><dt>Tiền phạt</dt><dd>{(card.fine || 0).toLocaleString('vi-VN')}đ</dd></div>
+              </>
+            )}
           </dl>
         </section>
       </div>
@@ -107,6 +181,58 @@ export default function BorrowCardDetail() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="detail-card detail-section">
+        <h2>Hành động</h2>
+        {actionError && <div className="alert alert-error">{actionError}</div>}
+        {actionMessage && <div className="alert alert-success">{actionMessage}</div>}
+
+        {/* Admin/librarian duyet hoac tu choi yeu cau muon dang cho */}
+        {canModify && card.status === 'pending' && (
+          <div className="action-group">
+            <p>Yêu cầu mượn sách này đang chờ duyệt.</p>
+            <div className="form-actions">
+              <button type="button" className="btn btn-primary" onClick={handleApprove} disabled={actionLoading}>
+                ✓ Duyệt yêu cầu
+              </button>
+              <button type="button" className="btn btn-delete" onClick={handleReject} disabled={actionLoading}>
+                ✕ Từ chối
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Chu phieu (hoac admin/librarian): tu tra sach / gia han truc tiep */}
+        {(isOwner || canModify) && card.status === 'borrowing' && (
+          <div className="action-group">
+            <div className="form-actions">
+              <button type="button" className="btn btn-primary" onClick={handleReturn} disabled={actionLoading}>
+                📚 Trả sách
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleRenew}
+                disabled={actionLoading || card.renewCount >= MAX_RENEWAL_COUNT || effectiveStatus === 'overdue'}
+              >
+                ⏳ Gia hạn (+7 ngày)
+              </button>
+            </div>
+            {effectiveStatus === 'overdue' && (
+              <p className="text-muted">Phiếu đã quá hạn trả, không thể gia hạn thêm.</p>
+            )}
+            {card.renewCount >= MAX_RENEWAL_COUNT && effectiveStatus !== 'overdue' && (
+              <p className="text-muted">Đã gia hạn tối đa {MAX_RENEWAL_COUNT} lần.</p>
+            )}
+          </div>
+        )}
+
+        {card.status === 'pending' && !canModify && (
+          <p className="text-muted">Yêu cầu mượn sách đang chờ thủ thư/admin duyệt.</p>
+        )}
+        {card.status === 'returned' && <p className="text-muted">Phiếu mượn này đã hoàn tất, sách đã được trả.</p>}
+        {card.status === 'rejected' && <p className="text-muted">Yêu cầu mượn này đã bị từ chối.</p>}
       </section>
 
       <section className="detail-card detail-section">

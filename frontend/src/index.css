@@ -55,6 +55,10 @@ a:hover {
   max-width: 420px;
 }
 
+.auth-card-wide {
+  max-width: 560px;
+}
+
 .auth-card h1 {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -65,6 +69,13 @@ a:hover {
   text-align: center;
   margin-top: 1rem;
   color: var(--text-light);
+}
+
+.form-hint {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin: -0.5rem 0 1rem;
+  line-height: 1.4;
 }
 
 .app-layout {
@@ -101,6 +112,12 @@ a:hover {
 .navbar-user {
   color: var(--text-light);
   font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.navbar-user:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .app-body {
@@ -238,6 +255,38 @@ a:hover {
   font-weight: 600;
 }
 
+.cell-link {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.cell-link:hover {
+  text-decoration: underline;
+}
+
+.search-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.search-bar .form-group {
+  margin-bottom: 0;
+  min-width: 200px;
+  flex: 1;
+}
+
+.search-bar-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .cell-secondary {
   color: var(--text-light);
   font-size: 0.8rem;
@@ -309,7 +358,17 @@ a:hover {
   white-space: nowrap;
 }
 
-.borrow-status-borrowed {
+.borrow-status-pending {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.borrow-status-approved {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.borrow-status-borrowing {
   background: #dbeafe;
   color: #1d4ed8;
 }
@@ -324,7 +383,7 @@ a:hover {
   color: #c2410c;
 }
 
-.borrow-status-cancelled {
+.borrow-status-rejected {
   background: #e2e8f0;
   color: #475569;
 }
@@ -385,6 +444,12 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.65rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.readonly-field label {
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
 .readonly-field span {
@@ -392,8 +457,56 @@ a:hover {
   font-size: 0.82rem;
 }
 
+.avatar-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+}
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--border);
+}
+
+.avatar-preview-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  font-size: 3rem;
+}
+
+.profile-grid {
+  grid-template-columns: 240px 1fr;
+  align-items: start;
+}
+
+.profile-grid > .avatar-card {
+  grid-row: span 2;
+}
+
+@media (max-width: 700px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-grid > .avatar-card {
+    grid-row: auto;
+  }
+}
+
 .field-hint {
   color: var(--text-light);
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.field-error {
+  color: var(--danger);
   font-size: 0.8rem;
   margin-top: 0.4rem;
 }
@@ -469,7 +582,12 @@ a:hover {
   font-weight: 400;
 }
 
-.status-option-borrowed.selected {
+.status-option-approved.selected {
+  border-color: #4338ca;
+  background: #eef2ff;
+}
+
+.status-option-borrowing.selected {
   border-color: #3b82f6;
   background: #eff6ff;
 }
@@ -479,12 +597,7 @@ a:hover {
   background: #f0fdf4;
 }
 
-.status-option-overdue.selected {
-  border-color: #f97316;
-  background: #fff7ed;
-}
-
-.status-option-cancelled.selected {
+.status-option-rejected.selected {
   border-color: #64748b;
   background: #f8fafc;
 }
@@ -504,6 +617,20 @@ a:hover {
 
 .detail-section {
   margin-top: 1rem;
+}
+
+.action-group {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.action-group:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.action-group p {
+  margin: 0 0 0.5rem;
 }
 
 .status-summary>.borrow-status {
@@ -576,6 +703,11 @@ a:hover {
   margin-bottom: 1rem;
 }
 
+.form-stack {
+  display: flex;
+  flex-direction: column;
+}
+
 .form-group label {
   display: block;
   margin-bottom: 0.4rem;
@@ -584,7 +716,8 @@ a:hover {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border);
@@ -594,7 +727,8 @@ a:hover {
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
@@ -681,6 +815,94 @@ box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 .btn-sm {
   padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
+}
+
+.btn-disabled {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  background: #e2e8f0;
+  color: var(--text-light);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.book-thumb {
+  width: 42px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.book-thumb-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  font-size: 1.2rem;
+}
+
+.book-detail-grid {
+  grid-template-columns: 160px 1fr 1fr;
+}
+
+.book-cover-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.book-cover-large {
+  width: 100%;
+  max-width: 160px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.book-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  font-size: 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .book-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.badge-out-of-stock {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.empty-panel {
+  text-align: center;
+  color: var(--text-light);
+  padding: 3rem 1rem;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.pagination-info {
+  color: var(--text-light);
+  font-size: 0.85rem;
 }
 
 .btn-full {
@@ -953,26 +1175,6 @@ box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 .text-muted {
   color: var(--text-light);
   font-size: 0.9rem;
-}
-
-.badge-borrowed {
-  background: #dbeafe;
-  color: #3b82f6;
-}
-
-.badge-returned {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.badge-overdue {
-  background: #fee2e2;
-  color: #ef4444;
-}
-
-.badge-cancelled {
-  background: #f1f5f9;
-  color: #94a3b8;
 }
 
 @media (max-width: 1024px) {
