@@ -363,7 +363,12 @@ a:hover {
   color: #a16207;
 }
 
-.borrow-status-borrowed {
+.borrow-status-approved {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.borrow-status-borrowing {
   background: #dbeafe;
   color: #1d4ed8;
 }
@@ -378,7 +383,7 @@ a:hover {
   color: #c2410c;
 }
 
-.borrow-status-cancelled {
+.borrow-status-rejected {
   background: #e2e8f0;
   color: #475569;
 }
@@ -577,7 +582,12 @@ a:hover {
   font-weight: 400;
 }
 
-.status-option-borrowed.selected {
+.status-option-approved.selected {
+  border-color: #4338ca;
+  background: #eef2ff;
+}
+
+.status-option-borrowing.selected {
   border-color: #3b82f6;
   background: #eff6ff;
 }
@@ -587,12 +597,7 @@ a:hover {
   background: #f0fdf4;
 }
 
-.status-option-overdue.selected {
-  border-color: #f97316;
-  background: #fff7ed;
-}
-
-.status-option-cancelled.selected {
+.status-option-rejected.selected {
   border-color: #64748b;
   background: #f8fafc;
 }
@@ -1170,26 +1175,6 @@ box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 .text-muted {
   color: var(--text-light);
   font-size: 0.9rem;
-}
-
-.badge-borrowed {
-  background: #dbeafe;
-  color: #3b82f6;
-}
-
-.badge-returned {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.badge-overdue {
-  background: #fee2e2;
-  color: #ef4444;
-}
-
-.badge-cancelled {
-  background: #f1f5f9;
-  color: #94a3b8;
 }
 
 @media (max-width: 1024px) {

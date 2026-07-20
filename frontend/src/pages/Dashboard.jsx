@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import BorrowStatusBadge from '../components/common/BorrowStatusBadge';
+import { getEffectiveStatus } from '../utils/borrowStatus';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -229,11 +231,7 @@ export default function Dashboard() {
                   <td>{new Date(card.borrowDate).toLocaleDateString('vi-VN')}</td>
                   <td>{card.dueDate ? new Date(card.dueDate).toLocaleDateString('vi-VN') : '—'}</td>
                   <td>
-                    <span className={`badge badge-${card.status}`}>
-                      {card.status === 'borrowed' ? 'Đang mượn' :
-                        card.status === 'returned' ? 'Đã trả' :
-                          card.status === 'overdue' ? 'Quá hạn' : 'Đã hủy'}
-                    </span>
+                    <BorrowStatusBadge status={getEffectiveStatus(card)} />
                   </td>
                 </tr>
               ))}
