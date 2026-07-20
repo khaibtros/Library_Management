@@ -4,6 +4,13 @@ import API from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import { getApiErrorMessage } from '../../utils/apiError';
 
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const addDaysStr = (days) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
 export default function BookDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,6 +19,8 @@ export default function BookDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [fromDate, setFromDate] = useState(todayStr());
+  const [toDate, setToDate] = useState(addDaysStr(14));
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState('');
   const [requestSuccess, setRequestSuccess] = useState('');
@@ -50,10 +59,36 @@ export default function BookDetail() {
       return;
     }
 
+    // Validate ngay muon / ngay tra du kien (khop voi validate o backend)
+    if (!fromDate || !toDate) {
+      setRequestError('Vui lòng chọn ngày mượn và ngày trả dự kiến.');
+      return;
+    }
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    if (from < startOfToday) {
+      setRequestError('Ngày mượn không được ở trong quá khứ.');
+      return;
+    }
+    if (to <= from) {
+      setRequestError('Ngày trả dự kiến phải sau ngày mượn.');
+      return;
+    }
+    const MAX_LOAN_DAYS = 30;
+    const loanDays = (to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000);
+    if (loanDays > MAX_LOAN_DAYS) {
+      setRequestError(`Thời gian mượn không được quá ${MAX_LOAN_DAYS} ngày.`);
+      return;
+    }
+
     setRequesting(true);
     try {
       const { data: createdCard } = await API.post('/borrow-cards/request', {
         borrowedBooks: [{ book: id, quantity: qty }],
+        borrowDate: fromDate,
+        dueDate: toDate,
       });
       setRequestSuccess('Đã gửi yêu cầu mượn sách! Vui lòng chờ thủ thư/admin duyệt.');
       setTimeout(() => navigate(`/borrow-cards/${createdCard._id}`), 1200);
@@ -143,6 +178,28 @@ export default function BookDetail() {
                   step="1"
                   value={quantity}
                   onChange={(event) => setQuantity(event.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="fromDate">Ngày mượn</label>
+                <input
+                  id="fromDate"
+                  type="date"
+                  min={todayStr()}
+                  value={fromDate}
+                  onChange={(event) => setFromDate(event.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="toDate">Ngày trả dự kiến</label>
+                <input
+                  id="toDate"
+                  type="date"
+                  min={fromDate}
+                  value={toDate}
+                  onChange={(event) => setToDate(event.target.value)}
                   required
                 />
               </div>

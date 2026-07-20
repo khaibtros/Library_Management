@@ -213,10 +213,33 @@ const deleteBorrowCard = async (req, res) => {
 // KHONG tru so luong sach ngay, chi tru khi duoc duyet (approveBorrowRequest).
 const createBorrowRequest = async (req, res) => {
   try {
-    const { borrowedBooks, dueDate } = req.body;
+    const { borrowedBooks, borrowDate, dueDate } = req.body;
 
     if (!borrowedBooks || !Array.isArray(borrowedBooks) || borrowedBooks.length === 0) {
       return res.status(400).json({ message: 'Vui lòng chọn ít nhất một sách để mượn' });
+    }
+
+    // --- Validate ngay muon (borrowDate) / ngay tra du kien (dueDate) ---
+    if (!borrowDate || !dueDate) {
+      return res.status(400).json({ message: 'Vui lòng chọn ngày mượn và ngày trả dự kiến' });
+    }
+    const parsedBorrowDate = new Date(borrowDate);
+    const parsedDueDate = new Date(dueDate);
+    if (Number.isNaN(parsedBorrowDate.getTime()) || Number.isNaN(parsedDueDate.getTime())) {
+      return res.status(400).json({ message: 'Ngày mượn hoặc ngày trả không hợp lệ' });
+    }
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    if (parsedBorrowDate < startOfToday) {
+      return res.status(400).json({ message: 'Ngày mượn không được ở trong quá khứ' });
+    }
+    if (parsedDueDate <= parsedBorrowDate) {
+      return res.status(400).json({ message: 'Ngày trả dự kiến phải sau ngày mượn' });
+    }
+    const MAX_LOAN_DAYS = 30;
+    const loanDays = (parsedDueDate.getTime() - parsedBorrowDate.getTime()) / (24 * 60 * 60 * 1000);
+    if (loanDays > MAX_LOAN_DAYS) {
+      return res.status(400).json({ message: `Thời gian mượn không được quá ${MAX_LOAN_DAYS} ngày` });
     }
 
     // Kiem tra ton kho
@@ -259,7 +282,8 @@ const createBorrowRequest = async (req, res) => {
       reader: req.user._id,
       borrowedBooks,
       status: 'pending',
-      dueDate: dueDate || undefined,
+      borrowDate: parsedBorrowDate,
+      dueDate: parsedDueDate,
     });
 
     const newCard = await card.save();
