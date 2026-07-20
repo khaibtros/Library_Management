@@ -12,6 +12,7 @@ import BookList from './pages/Books/BookList';
 import BookDetail from './pages/Books/BookDetail';
 import BookForm from './pages/Books/BookForm';
 import BorrowCardList from './pages/BorrowCards/BorrowCardList';
+import BorrowHistory from './pages/BorrowCards/BorrowHistory';
 import BorrowCardForm from './pages/BorrowCards/BorrowCardForm';
 import BorrowCardDetail from './pages/BorrowCards/BorrowCardDetail';
 
@@ -43,6 +44,7 @@ export default function App() {
                 Tao/sua/xoa chi danh cho admin/librarian, khop voi
                 backend/routes/borrowRoutes.js */}
             <Route path="borrow-cards" element={<BorrowCardList />} />
+            <Route path="borrow-cards/my-history" element={<BorrowHistory />} />
             <Route path="borrow-cards/new" element={<PrivateRoute roles={['admin', 'librarian']}><BorrowCardForm /></PrivateRoute>} />
             <Route path="borrow-cards/:id" element={<BorrowCardDetail />} />
             <Route path="borrow-cards/:id/edit" element={<PrivateRoute roles={['admin', 'librarian']}><BorrowCardForm /></PrivateRoute>} />
