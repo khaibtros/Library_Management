@@ -4,7 +4,10 @@ import API from '../../api/axios';
 import BorrowStatusBadge from '../../components/common/BorrowStatusBadge';
 import { useAuth } from '../../context/AuthContext';
 import { getApiErrorMessage } from '../../utils/apiError';
-import { formatDateTime, toDateTimeLocal, toIsoString } from '../../utils/date';
+import { formatDateTime } from '../../utils/date';
+import { getEffectiveStatus } from '../../utils/borrowStatus';
+
+const MAX_RENEWAL_COUNT = 2;
 
 export default function BorrowCardDetail() {
   const { id } = useParams();
@@ -17,11 +20,9 @@ export default function BorrowCardDetail() {
   const [actionError, setActionError] = useState('');
   const [actionMessage, setActionMessage] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [showRenewalForm, setShowRenewalForm] = useState(false);
-  const [newDueDate, setNewDueDate] = useState('');
 
   const canModify = user?.role === 'admin' || user?.role === 'librarian';
-  const isReader = user?.role === 'reader';
+  const isOwner = card?.reader?._id === user?._id;
 
   const reloadCard = async () => {
     const { data } = await API.get(`/borrow-cards/${id}`);
@@ -85,44 +86,21 @@ export default function BorrowCardDetail() {
     );
   };
 
-  const handleRequestReturn = () => {
-    if (!window.confirm('Gửi yêu cầu trả sách cho phiếu mượn này?')) return;
+  // Tra sach / gia han: TU doc gia thao tac, KHONG can admin duyet
+  // (xem backend/controllers/borrowController.js returnBook/renewBook)
+  const handleReturn = () => {
+    if (!window.confirm('Xác nhận trả sách? Nếu quá hạn, tiền phạt sẽ được tính tự động.')) return;
     runAction(
-      () => API.put(`/borrow-cards/${id}/request-return`),
-      'Đã gửi yêu cầu trả sách, vui lòng chờ thủ thư/admin xác nhận.',
+      () => API.put(`/borrow-cards/${id}/return`),
+      'Đã trả sách thành công.',
     );
   };
 
-  const handleConfirmReturn = () => {
-    if (!window.confirm('Xác nhận độc giả đã trả sách? Số lượng sách sẽ được hoàn lại.')) return;
+  const handleRenew = () => {
+    if (!window.confirm('Gia hạn thêm 7 ngày cho phiếu mượn này?')) return;
     runAction(
-      () => API.put(`/borrow-cards/${id}/confirm-return`),
-      'Đã xác nhận trả sách.',
-    );
-  };
-
-  const handleRequestRenewal = (event) => {
-    event.preventDefault();
-    if (!newDueDate) {
-      setActionError('Vui lòng chọn hạn trả mới.');
-      return;
-    }
-    runAction(
-      () => API.put(`/borrow-cards/${id}/request-renewal`, { requestedDueDate: toIsoString(newDueDate) }),
-      'Đã gửi yêu cầu gia hạn, vui lòng chờ thủ thư/admin duyệt.',
-    ).then(() => setShowRenewalForm(false));
-  };
-
-  const handleApproveRenewal = () => runAction(
-    () => API.put(`/borrow-cards/${id}/approve-renewal`),
-    'Đã duyệt gia hạn, hạn trả mới đã được áp dụng.',
-  );
-
-  const handleRejectRenewal = () => {
-    if (!window.confirm('Từ chối yêu cầu gia hạn này?')) return;
-    runAction(
-      () => API.put(`/borrow-cards/${id}/reject-renewal`),
-      'Đã từ chối yêu cầu gia hạn.',
+      () => API.put(`/borrow-cards/${id}/renew`),
+      'Đã gia hạn thêm 7 ngày.',
     );
   };
 
@@ -136,6 +114,8 @@ export default function BorrowCardDetail() {
       </div>
     );
   }
+
+  const effectiveStatus = getEffectiveStatus(card);
 
   return (
     <div className="page">
@@ -170,10 +150,16 @@ export default function BorrowCardDetail() {
 
         <section className="detail-card status-summary">
           <h2>Trạng thái</h2>
-          <BorrowStatusBadge status={card.status} />
+          <BorrowStatusBadge status={effectiveStatus} />
           <dl className="detail-list compact">
             <div><dt>Người xử lý</dt><dd>{card.processedBy?.name || '—'}</dd></div>
-            <div><dt>Email</dt><dd>{card.processedBy?.email || '—'}</dd></div>
+            <div><dt>Số lần gia hạn</dt><dd>{card.renewCount || 0}/{MAX_RENEWAL_COUNT}</dd></div>
+            {card.status === 'returned' && (card.fine > 0 || card.lateDays > 0) && (
+              <>
+                <div><dt>Số ngày trễ</dt><dd>{card.lateDays || 0} ngày</dd></div>
+                <div><dt>Tiền phạt</dt><dd>{(card.fine || 0).toLocaleString('vi-VN')}đ</dd></div>
+              </>
+            )}
           </dl>
         </section>
       </div>
@@ -217,81 +203,36 @@ export default function BorrowCardDetail() {
           </div>
         )}
 
-        {/* Reader: gui yeu cau tra sach */}
-        {isReader && card.status === 'borrowed' && (
+        {/* Chu phieu (hoac admin/librarian): tu tra sach / gia han truc tiep */}
+        {(isOwner || canModify) && card.status === 'borrowing' && (
           <div className="action-group">
-            {card.returnRequested ? (
-              <p className="text-muted">📩 Bạn đã gửi yêu cầu trả sách, đang chờ thủ thư/admin xác nhận.</p>
-            ) : (
-              <button type="button" className="btn btn-secondary" onClick={handleRequestReturn} disabled={actionLoading}>
-                📩 Gửi yêu cầu trả sách
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Admin/librarian: xac nhan da tra sach khi reader gui yeu cau (hoac chu dong) */}
-        {canModify && card.status === 'borrowed' && (
-          <div className="action-group">
-            {card.returnRequested && <p>Độc giả đã gửi yêu cầu trả sách.</p>}
-            <button type="button" className="btn btn-primary" onClick={handleConfirmReturn} disabled={actionLoading}>
-              ✓ Xác nhận đã trả sách
-            </button>
-          </div>
-        )}
-
-        {/* Reader: gui yeu cau gia han */}
-        {isReader && card.status === 'borrowed' && (
-          <div className="action-group">
-            {card.renewalRequested ? (
-              <p className="text-muted">
-                ⏳ Bạn đã gửi yêu cầu gia hạn đến <strong>{formatDateTime(card.requestedDueDate)}</strong>, đang chờ duyệt.
-              </p>
-            ) : showRenewalForm ? (
-              <form onSubmit={handleRequestRenewal} className="form-row">
-                <div className="form-group">
-                  <label htmlFor="newDueDate">Hạn trả mới muốn đề xuất</label>
-                  <input
-                    id="newDueDate"
-                    type="datetime-local"
-                    value={newDueDate}
-                    min={toDateTimeLocal(card.dueDate)}
-                    onChange={(event) => setNewDueDate(event.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group" style={{ alignSelf: 'flex-end' }}>
-                  <button type="submit" className="btn btn-primary" disabled={actionLoading}>Gửi yêu cầu</button>
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowRenewalForm(false)}>Hủy</button>
-                </div>
-              </form>
-            ) : (
-              <button type="button" className="btn btn-secondary" onClick={() => setShowRenewalForm(true)}>
-                ⏳ Gửi yêu cầu gia hạn
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Admin/librarian: duyet hoac tu choi gia han */}
-        {canModify && card.renewalRequested && (
-          <div className="action-group">
-            <p>
-              Độc giả đề xuất gia hạn đến <strong>{formatDateTime(card.requestedDueDate)}</strong>.
-            </p>
             <div className="form-actions">
-              <button type="button" className="btn btn-primary" onClick={handleApproveRenewal} disabled={actionLoading}>
-                ✓ Duyệt gia hạn
+              <button type="button" className="btn btn-primary" onClick={handleReturn} disabled={actionLoading}>
+                📚 Trả sách
               </button>
-              <button type="button" className="btn btn-delete" onClick={handleRejectRenewal} disabled={actionLoading}>
-                ✕ Từ chối gia hạn
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleRenew}
+                disabled={actionLoading || card.renewCount >= MAX_RENEWAL_COUNT || effectiveStatus === 'overdue'}
+              >
+                ⏳ Gia hạn (+7 ngày)
               </button>
             </div>
+            {effectiveStatus === 'overdue' && (
+              <p className="text-muted">Phiếu đã quá hạn trả, không thể gia hạn thêm.</p>
+            )}
+            {card.renewCount >= MAX_RENEWAL_COUNT && effectiveStatus !== 'overdue' && (
+              <p className="text-muted">Đã gia hạn tối đa {MAX_RENEWAL_COUNT} lần.</p>
+            )}
           </div>
         )}
 
+        {card.status === 'pending' && !canModify && (
+          <p className="text-muted">Yêu cầu mượn sách đang chờ thủ thư/admin duyệt.</p>
+        )}
         {card.status === 'returned' && <p className="text-muted">Phiếu mượn này đã hoàn tất, sách đã được trả.</p>}
-        {card.status === 'cancelled' && <p className="text-muted">Yêu cầu mượn này đã bị từ chối/hủy.</p>}
+        {card.status === 'rejected' && <p className="text-muted">Yêu cầu mượn này đã bị từ chối.</p>}
       </section>
 
       <section className="detail-card detail-section">
