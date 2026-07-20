@@ -21,7 +21,7 @@ export default function BorrowCardForm() {
     borrowDate: toDateTimeLocal(new Date()),
     dueDate: '',
     returnDate: '',
-    status: 'borrowed',
+    status: 'borrowing',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,7 +52,7 @@ export default function BorrowCardForm() {
             borrowDate: toDateTimeLocal(card.borrowDate),
             dueDate: toDateTimeLocal(card.dueDate),
             returnDate: toDateTimeLocal(card.returnDate),
-            status: card.status || 'borrowed',
+            status: card.status || 'borrowing',
           });
         } else {
           const [{ data: bookData }, { data: readerData }] = await Promise.all([
