@@ -1,13 +1,35 @@
 const Book = require('../models/Book');
 const BorrowCard = require('../models/BorrowCard');
 
-// Get all books
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Return a paginated result when filters are supplied, while preserving the
+// original array response for existing consumers that request every book.
 const getBooks = async (req, res) => {
   try {
-    const books = await Book.find();
-    res.status(200).json(books);
+    const { title, author, isbn, category, stock, page, limit } = req.query;
+    const hasFilters = [title, author, isbn, category, stock, page, limit].some((value) => value !== undefined);
+
+    if (!hasFilters) return res.status(200).json(await Book.find());
+
+    const query = {};
+    if (title?.trim()) query.title = { $regex: escapeRegExp(title.trim()), $options: 'i' };
+    if (author?.trim()) query.author = { $regex: escapeRegExp(author.trim()), $options: 'i' };
+    if (isbn?.trim()) query.isbn = { $regex: escapeRegExp(isbn.trim()), $options: 'i' };
+    if (category?.trim()) query.category = { $regex: escapeRegExp(category.trim()), $options: 'i' };
+    if (stock === 'low') query.availableQuantity = { $gt: 0, $lte: 2 };
+    if (stock === 'out') query.availableQuantity = 0;
+
+    const pageNumber = Math.max(1, Number(page) || 1);
+    const pageSize = Math.min(100, Math.max(1, Number(limit) || 10));
+    const [count, data] = await Promise.all([
+      Book.countDocuments(query),
+      Book.find(query).sort({ title: 1 }).skip((pageNumber - 1) * pageSize).limit(pageSize),
+    ]);
+
+    return res.status(200).json({ count, page: pageNumber, totalPages: Math.ceil(count / pageSize), data });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 

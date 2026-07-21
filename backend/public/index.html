@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý thư viện</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Library Management</p>
+        <h1>Quản lý sách</h1>
+      </div>
+      <button class="secondary-button" id="refreshBooksButton" type="button">Tải lại</button>
+    </header>
+
+    <section class="panel token-panel" aria-labelledby="token-title">
+      <div>
+        <h2 id="token-title">Token quản trị</h2>
+        <p>Dán JWT của tài khoản admin hoặc librarian để thêm sách mới.</p>
+      </div>
+      <label class="field token-field">
+        <span>Bearer token</span>
+        <input id="authToken" type="password" autocomplete="off" placeholder="eyJhbGciOiJIUzI1NiIs...">
+        <small class="field-error" id="authTokenError"></small>
+      </label>
+    </section>
+
+    <section class="panel" aria-labelledby="form-title">
+      <h2 id="form-title">Thêm sách mới</h2>
+      <form id="bookForm" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            <span>Tên sách</span>
+            <input id="title" name="title" type="text" placeholder="Ví dụ: Clean Code">
+            <small class="field-error" id="titleError"></small>
+          </label>
+
+          <label class="field">
+            <span>Tác giả</span>
+            <input id="author" name="author" type="text" placeholder="Ví dụ: Robert C. Martin">
+            <small class="field-error" id="authorError"></small>
+          </label>
+
+          <label class="field">
+            <span>ISBN</span>
+            <input id="isbn" name="isbn" type="text" placeholder="Ví dụ: 978-0132350884">
+            <small class="field-error" id="isbnError"></small>
+          </label>
+
+          <label class="field">
+            <span>Tổng số lượng</span>
+            <input id="totalQuantity" name="totalQuantity" type="number" min="1" step="1" value="1">
+            <small class="field-error" id="totalQuantityError"></small>
+          </label>
+
+          <label class="field">
+            <span>Số lượng còn lại</span>
+            <input id="availableQuantity" name="availableQuantity" type="number" min="0" step="1" value="1">
+            <small class="field-error" id="availableQuantityError"></small>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button id="submitButton" type="submit">Thêm sách</button>
+        </div>
+      </form>
+    </section>
+
+    <div class="status" id="statusMessage" role="status" aria-live="polite"></div>
+
+    <section class="panel" aria-labelledby="list-title">
+      <div class="section-title">
+        <h2 id="list-title">Danh sách sách</h2>
+        <span id="bookCount">0 sách</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên sách</th>
+              <th>Tác giả</th>
+              <th>ISBN</th>
+              <th>Danh mục</th>
+              <th>Tổng</th>
+              <th>Còn lại</th>
+            </tr>
+          </thead>
+          <tbody id="bookTableBody">
+            <tr>
+              <td colspan="6" class="empty-cell">Đang tải danh sách sách...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

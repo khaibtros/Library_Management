@@ -34,6 +34,13 @@ const applyInventoryDelta = async (oldItems, newItems, session) => {
 };
 
 const withTransaction = async (work) => {
+  const topologyType = mongoose.connection.client?.topology?.description?.type;
+  const supportsTransactions = topologyType === 'ReplicaSetWithPrimary' || topologyType === 'Sharded';
+
+  // MongoDB standalone không hỗ trợ transaction. Trong môi trường này vẫn chạy
+  // tuần tự các thao tác với retryable writes đã tắt ở cấu hình kết nối.
+  if (!supportsTransactions) return work(null);
+
   const session = await mongoose.startSession();
   try {
     let result;
@@ -52,7 +59,8 @@ const queryCards = async (req, extra = {}) => {
   await refreshOverdue();
   const { search, status, fromDate, toDate, sort = 'dueDate', page = 1, limit = 10 } = req.query;
   const query = { ...extra, ...(req.user.role === 'reader' && { reader: req.user._id }) };
-  query.status = extra.status || status || query.status;
+  const requestedStatus = extra.status || status;
+  if (requestedStatus) query.status = requestedStatus;
   if (fromDate || toDate) query.borrowDate = { ...(fromDate && { $gte: new Date(fromDate) }), ...(toDate && { $lte: new Date(toDate) }) };
   if (search) {
     const pattern = new RegExp(search, 'i');
